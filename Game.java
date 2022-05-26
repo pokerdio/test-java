@@ -1,11 +1,22 @@
 import java.io.*;
-
+import java.util.*;
 import gameobjects.*; 
+import globals.*;
 
 public class Game {
+    ArrayList<Room> map; 
+    Direction foo; 
+
+    public Game() {
+        map = new ArrayList<Room>(); 
+        foo = NO_DIR;
+    }
+
     public static void main(String[] args) throws IOException {
         BufferedReader in = new BufferedReader (new InputStreamReader(System.in));
         String s; 
+
+        Game game = new Game(); 
         Room r = new Room(); 
         r.name = "Troll Gameobjects.Room";
         r.s = 1;
