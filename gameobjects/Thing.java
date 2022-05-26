@@ -1,5 +1,8 @@
+package gameobjects;
+
 import java.io.*;
 import java.util.*;
+
 
 class Thing{
     public int x, y; 
