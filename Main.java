@@ -3,7 +3,10 @@ import java.io.*;
 import java.util.*;
 public class Main {
     public static void main(String[] arg) {
+        int foo[] = new int[100];
+
         ArrayList<Thing> things = new ArrayList<Thing>();
+
         things.add(new Thing(1,222));
         things.add(new Thing(6,12));
         things.add(new Thing(3,98));

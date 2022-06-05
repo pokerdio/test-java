@@ -1,6 +1,6 @@
 package globals;
 
-enum Direction {
+public enum Direction {
     NORTH,
     SOUTH,
     WEST,

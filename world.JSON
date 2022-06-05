@@ -1,0 +1,17 @@
+{"map":[
+{"name":"kitchen",
+ "info":"    The kitchen is a high room with many cupboards, a refrigerator, 
+a sink and a cooking board. To the north there is a closed 
+window. Through the courtains you can see flashing lights 
+outside and the wail of police car sirens. ", 
+ "links":{"south":"hallway"}},
+{"name":"hallway",
+ "info":"    The hallway is completely dark. Where you'd expect walls, 
+a ceiling or a floor is pure black. Softly luminiscent doors 
+and the hardness of the floor the only hints of an external reality. ",
+ "links":{"north":"kitchen"},
+ "items":["key"]}
+],
+ "items":[	 {"name":"key"}]
+
+}
