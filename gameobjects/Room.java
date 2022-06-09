@@ -6,8 +6,8 @@ import java.io.*;
 import org.json.simple.*;
 import org.json.simple.parser.*;
 
-public class Room {
-    public String name, info;
+public class Room extends Thing {
+
     public Map<String, Room> con;
 
     @SuppressWarnings("unchecked")
@@ -23,7 +23,7 @@ public class Room {
         List<String> roomto = new ArrayList<String>();
         List<String> roomdir = new ArrayList<String>();
         Map<String,Room> rooms = new HashMap<String,Room>();
-
+        
         
         for (Iterator it = map.iterator() ; it.hasNext() ;){
             room = (JSONObject)it.next();
@@ -66,8 +66,7 @@ public class Room {
         return s;
     }
     public Room(String name, String info) {
-        this.name = name;
-        this.info = info;
+        super(name, info);
         con = new HashMap<String, Room>();
     }
 }

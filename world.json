@@ -4,14 +4,60 @@
 a sink and a cooking board. To the north there is a closed 
 window. Through the courtains you can see flashing lights 
 outside and the wail of police car sirens. ", 
+ "traits":["locked_door"],
  "links":{"south":"hallway"}},
 {"name":"hallway",
- "info":"    The hallway is completely dark. Where you'd expect walls, 
-a ceiling or a floor is pure black. Softly luminiscent doors 
-and the hardness of the floor the only hints of an external reality. ",
- "links":{"north":"kitchen"},
- "items":["key"]}
-],
- "items":[	 {"name":"key"}]
+ "info":"    The hallway is completely dark, except for a soft light 
+coming framing the edges of rooms to the north and east.  ",
+ "links":{"north":"kitchen", "east":"living room"},
+ "traits":"locked_door",
+ "items":"key"},
 
+{"name":"living room",
+ "info":"    Work in progress.",
+ "links":{"west":"hallway"}}
+],
+ "items":[{"name":"key",
+		   "info":"This is a small brass key.",
+		   "traits":"pickable"}],
+ "actions":[	 
+	 {"command":["unlock door", "lock door", "use key"],
+	  "condition":{"own_not":"key"},
+	  "message":"You don't have any key."},
+	 {"command":["unlock door", "lock door", "use key"],
+	  "condition":{"not_in_room":["hallway", "kitchen"],
+				   "own":"key"},
+	  "message":"The key doesn't seem to fit in this room."}
+	 {"command":"unlock door",
+	  "condition":{"in_room":["hallway", "kitchen"]
+				   "room_lacks_trait":"locked_door",
+				   "own":"key"}
+	  "message":"The kitchen door is already unlocked. "},
+
+	 {"command":"lock door",
+	  "condition":{"in_room":["hallway", "kitchen"]
+				   "room_has_trait":"locked_door",
+				   "own":"key"}
+	  "message":"The kitchen door is already locked. "},
+
+	 {"command":["unlock door", "use key"],
+	  "condition":{"in_room":["hallway", "kitchen"],
+				   "own":"key",
+				   "room_has_trait":"locked_door"},
+	  "effect":[{"type": "remove_room_trait", 
+				 "target":["hallway", "kitchen"],
+				 "value":"locked_door"},
+			   ]
+	  "message":"You unlock the kitchen door."},
+
+	 {"command":["lock door", "use key"],
+	  "condition":{"in_room":["hallway", "kitchen"],
+				   "own":"key",
+				   "room_lacks_trait":"locked_door"},
+	  "effect":[{"type": "add_room_trait", 
+				 "target":["hallway", "kitchen"],
+				 "value":"locked_door"} ]
+	  "message":"You unlock the kitchen door."}
+
+ ],
 }

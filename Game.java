@@ -13,7 +13,7 @@ public class Game {
     }
     private static void InitializeCommand() {
         Command.IgnoreWords("to", "from", "at");
-        Command.IgnoreWords("the", "a", "an");
+        Command.IgnoreWords("the", "a", "an", "to");
 
         Command.Translation("see", "look");
         Command.Translation("watch", "look");
@@ -27,7 +27,8 @@ public class Game {
         Command.Translation("w", "west");
         Command.Translation("e", "east");
     }
-    private static void p(String s)  {
+
+    private static void p(Object s)  {
         System.out.println(s);
     }
     public static void main(String[] args) throws IOException {
@@ -35,9 +36,12 @@ public class Game {
         String s; 
 
         Game game = new Game(); 
+
+        p("Kartoffel!");
+
         Room r;
         try {
-            r = Room.JSONLoad("world.JSON", "hallway");
+            r = Room.JSONLoad("world.json", "hallway");
         }
         catch (Exception e) {
             p("...failed loading the world..." + e.toString());
@@ -50,13 +54,16 @@ public class Game {
         do {
             System.out.print("> ");
             com = new Command(in.readLine());
+            // p(com);
             if (com.Match("look")) {
                 p(r.info);
                 p("");
                 p(r.ConnectionInfo());
-            } else if (com.Match("look", "?")){
+            } else if (com.Match("count", "*")) {
+                p("You used " + Integer.toString(com.matchData.size()) + " words.");
+            } else if (com.Match("look", "?")) {
                 p("you try to look at " + com.matchData.get(0));
-            } else if (com.Match("go", "?")){
+            } else if (com.Match("go", "?")) {
                 String desto = com.matchData.get(0);
                 if (r.con.containsKey(desto)) {
                     r = r.con.get(desto);

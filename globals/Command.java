@@ -2,22 +2,29 @@ package globals;
 import java.util.*;
 
 public class Command {
-    private static void p(String s) {
+    private static void p(Object s) {
         System.out.println(s);
     }
+
+    @Override
+    public String toString() {
+        return com.toString();
+    }
+
     private static Set<String> ignoreSet = new HashSet<String>();
+    private static Map<String, String> translate = new HashMap<String,String>();
+    public List<String> com;
+    public List<String> matchData;
+
     public static void IgnoreWords(String... ignoreWords) {
         for (String w : ignoreWords) {
             ignoreSet.add(w);
         }
     }
-    private static Map<String, String> translate = new HashMap<String,String>();
+
     public static void Translation(String src, String dest) {
         translate.put(src, dest);
     }
-
-    public List<String> com;
-    public List<String> matchData;
 
     public boolean Match(String... pat) {
         if (com == null) {
@@ -33,10 +40,12 @@ public class Command {
                 if (it.hasNext()) {
                     matchData.add(it.next());
                 }
+                break;
             case "*":
                 while (it.hasNext()) {
                     matchData.add(it.next());
                 }
+                break; 
             default:
                 if (it.hasNext()) {
                     if (!c.equals(it.next())) {
@@ -50,6 +59,7 @@ public class Command {
             matchData = null;
             return false;
         }
+
         return true; 
     }
     public Command (String s) {

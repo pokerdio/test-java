@@ -5,9 +5,9 @@ import java.util.*;
 
 
 class Thing{
-    public int x, y; 
-    public Thing (int x, int y) {
-        this.x = x;
-        this.y = y;
+    public String name, info;
+    public Thing (String name, String info) {
+        this.name = name;
+        this.info = info;
     }
 }
