@@ -7,9 +7,12 @@ import org.json.simple.*;
 import org.json.simple.parser.*;
 
 public class Room extends Thing {
+    private static void p(Object o) {
+        System.out.println(o);
+    }
 
     public Map<String, Room> con;
-
+    public List<Thing> items;
     @SuppressWarnings("unchecked")
     public static Room JSONLoad(String filename, String start_room) throws Exception {
         FileReader reader = new FileReader(filename);
@@ -17,26 +20,33 @@ public class Room extends Thing {
         Object o = jsonParser.parse(reader);
         JSONObject world = (JSONObject)o;
         JSONArray map = (JSONArray)(world.get("map"));
-        JSONObject room; 
-
         List<String> roomfrom = new ArrayList<String>(); 
         List<String> roomto = new ArrayList<String>();
         List<String> roomdir = new ArrayList<String>();
         Map<String,Room> rooms = new HashMap<String,Room>();
-        
-        
+        Map<String,Thing> world_items = Thing.JSONReadThingList("world.json", "items");;
+
         for (Iterator it = map.iterator() ; it.hasNext() ;){
-            room = (JSONObject)it.next();
-            String name = (String)room.get("name");
-            String info = (String)room.get("info");
-            JSONObject links = (JSONObject)room.get("links");
-            rooms.put(name, new Room(name, info));
+            JSONObject element = (JSONObject)it.next();
+            String name = (String)element.get("name");
+            String info = (String)element.get("info");
+            JSONObject links = (JSONObject)element.get("links");
+            Room room = new Room(name, info);
+            rooms.put(name, room);
 
             for (Iterator it2 = links.keySet().iterator() ; it2.hasNext() ; ){
                 String dir = (String)it2.next();
                 roomfrom.add(name);
                 roomdir.add(dir);
                 roomto.add((String)links.get(dir));
+            }
+
+            JSONArray room_items = (JSONArray)(element.get("items"));
+            if (room_items != null) {
+                room_items.forEach(x -> room.items.add(world_items.get(x)));
+
+                p("items room name " + room.name);
+                p(room.items);
             }
         }
 
@@ -51,6 +61,18 @@ public class Room extends Thing {
 
     public void Connect(Room r, String dir) {
         con.put(dir, r);
+    }
+    public String ItemsInfo() {
+        if (items.isEmpty()) {
+            return "";
+        }
+        String s = "";
+        String nl = "";
+        for (Thing t : items) {
+            s = s + nl + "There is a " + t.name + " here.";
+            nl = "\n";
+        }
+        return s;
     }
     public String ConnectionInfo() {
         if (con.isEmpty()) {
@@ -68,5 +90,6 @@ public class Room extends Thing {
     public Room(String name, String info) {
         super(name, info);
         con = new HashMap<String, Room>();
+        items = new ArrayList<Thing>();
     }
 }

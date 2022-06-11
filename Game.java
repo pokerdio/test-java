@@ -37,8 +37,6 @@ public class Game {
 
         Game game = new Game(); 
 
-        p("Kartoffel!");
-
         Room r;
         try {
             r = Room.JSONLoad("world.json", "hallway");
@@ -59,6 +57,7 @@ public class Game {
                 p(r.info);
                 p("");
                 p(r.ConnectionInfo());
+                p(r.ItemsInfo());
             } else if (com.Match("count", "*")) {
                 p("You used " + Integer.toString(com.matchData.size()) + " words.");
             } else if (com.Match("look", "?")) {
