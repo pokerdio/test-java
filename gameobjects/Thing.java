@@ -11,6 +11,8 @@ import org.json.simple.parser.*;
 public class Thing {
     public String name, info;
     public Set<String> traits;
+    public List<Thing> contents;
+    
     private static void p(Object o) {
         System.out.println(o);
     }
@@ -18,7 +20,6 @@ public class Thing {
     @Override
     public String toString() {
         return name +  "|" + info + "|" + traits.toString();
-        
     }
     public static Map<String, Thing> JSONReadThingList(String filename, String field) throws Exception {
         FileReader reader = new FileReader(filename);
@@ -49,7 +50,7 @@ public class Thing {
     public Thing (String name, String info) {
         this.name = name;
         this.info = info;
-
+        this.contents = new ArrayList<Thing>();
         this.traits = new HashSet<String>();
     }
     public Thing(Thing other) {

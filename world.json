@@ -20,44 +20,4 @@ coming around the edges of doors to the north and east.  ",
  "items":[{"name":"key",
 		   "info":"This is a small brass key.",
 		   "traits":["pickable"]}],
- "actions":[	 
-	 {"command":["unlock door", "lock door", "use key"],
-	  "condition":{"own_not":"key"},
-	  "message":"You don't have any key."},
-	 {"command":["unlock door", "lock door", "use key"],
-	  "condition":{"not_in_room":["hallway", "kitchen"],
-				   "own":"key"},
-	  "message":"The key doesn't seem to fit in this room."}
-	 {"command":"unlock door",
-	  "condition":{"in_room":["hallway", "kitchen"]
-				   "room_lacks_trait":"locked_door",
-				   "own":"key"}
-	  "message":"The kitchen door is already unlocked. "},
-
-	 {"command":"lock door",
-	  "condition":{"in_room":["hallway", "kitchen"]
-				   "room_has_trait":"locked_door",
-				   "own":"key"}
-	  "message":"The kitchen door is already locked. "},
-
-	 {"command":["unlock door", "use key"],
-	  "condition":{"in_room":["hallway", "kitchen"],
-				   "own":"key",
-				   "room_has_trait":"locked_door"},
-	  "effect":[{"type": "remove_room_trait", 
-				 "target":["hallway", "kitchen"],
-				 "value":"locked_door"},
-			   ]
-	  "message":"You unlock the kitchen door."},
-
-	 {"command":["lock door", "use key"],
-	  "condition":{"in_room":["hallway", "kitchen"],
-				   "own":"key",
-				   "room_lacks_trait":"locked_door"},
-	  "effect":[{"type": "add_room_trait", 
-				 "target":["hallway", "kitchen"],
-				 "value":"locked_door"} ]
-	  "message":"You unlock the kitchen door."}
-
- ],
 }

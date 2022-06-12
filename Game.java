@@ -31,6 +31,8 @@ public class Game {
     private static void p(Object s)  {
         System.out.println(s);
     }
+
+
     public static void main(String[] args) throws IOException {
         BufferedReader in = new BufferedReader (new InputStreamReader(System.in));
         String s; 
