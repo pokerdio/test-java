@@ -86,7 +86,6 @@ public class Room extends Thing {
         String s = ""; 
         String nl = "";
         for (String dir : con.keySet()) {
-            
             s += nl + "Towards " + dir + " there is the " + con.get(dir).name + ".";
             nl = "\n";
         }

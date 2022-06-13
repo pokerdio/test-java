@@ -64,8 +64,18 @@ public class Game {
                 p(r.info);
                 p("");
                 p(r.ConnectionInfo());
-                p("");
-                p(r.ItemsInfo());
+                String itemInfo = r.ItemsInfo();
+                if (!itemInfo.equals("")) {
+                    p("");
+                    p(itemInfo);
+                }
+            } else if (com.Match("look", "outside")) {
+                for (Thing t : r.contents) {
+                    if (t.HasTrait("outside")) {
+                        p(t.info);
+                        break;
+                    }
+                }
             } else if (com.Match("look", "?")) {
                 String item_name = com.matchData.get(0);
                 // p("trying to find " + item_name + " in:");

@@ -14,6 +14,7 @@ coming around the edges of doors to the north and east.  ",
 {"name":"living room",
  "info":"    A large room well lit room, with wide windows opening to a scenic
 horizon. ",
+ "items":["horizon"],
  "links":{"west":"hallway"}}
 ],
  "items":[{"name":"key",
@@ -34,7 +35,7 @@ kitchen sink installed.",
 		  "traits":["visible"]},
 
 		 {"name":"horizon",
-		   "info":"Flat fields forming a patchwork of hues of green, are bounded by forested hills in the distance. ",
-		   "traits":[]}
+		   "info":"Outside the window flat fields forming a patchwork of hues of green are bounded in the distance by forested hills. ",
+		   "traits":["outside"]}
 ],
 }
