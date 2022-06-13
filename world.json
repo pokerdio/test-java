@@ -1,23 +1,40 @@
 {"map":[
 {"name":"kitchen",
- "info":"    The kitchen is a high room with many cupboards, a refrigerator, 
-a sink and a cooking board. To the north there is a closed 
-window. Through the courtains you can see flashing lights 
-outside and the wail of police car sirens. ", 
+ "info":"    This is a well furnished kitchen. ", 
+ "items":["refrigerator", "cupboard", "table", "sink"],
  "traits":["locked_door"],
  "links":{"south":"hallway"}},
 {"name":"hallway",
  "info":"    The hallway is completely dark, except for a soft light 
 coming around the edges of doors to the north and east.  ",
  "links":{"north":"kitchen", "east":"living room"},
- "traits":"locked_door",
+ "traits":["locked_door"],
  "items":["key"]},
 
 {"name":"living room",
- "info":"    Work in progress.",
+ "info":"    A large room well lit room, with wide windows opening to a scenic
+horizon. ",
  "links":{"west":"hallway"}}
 ],
  "items":[{"name":"key",
 		   "info":"This is a small brass key.",
-		   "traits":["pickable"]}],
+		   "traits":["visible", "pickable"]},
+		 {"name":"cupboard",
+		   "info":"This is an ordinary kitchen cupboard, with a drawer and a door.",
+		  "traits":["visible"]},
+		 {"name":"table",
+		   "info":"This is a wide kitchen table, fixed against the western wall, with a
+kitchen sink installed.",
+		  "traits":["visible"]},
+		 {"name":"refrigerator",
+		   "info":"This is a large and modern looking refrigerator.",
+		  "traits":["visible"]},
+		 {"name":"sink",
+		   "info":"The sink has faucets for cold and hot water.",
+		  "traits":["visible"]},
+
+		 {"name":"horizon",
+		   "info":"Flat fields forming a patchwork of hues of green, are bounded by forested hills in the distance. ",
+		   "traits":[]}
+],
 }

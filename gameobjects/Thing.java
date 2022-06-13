@@ -10,17 +10,43 @@ import org.json.simple.parser.*;
 
 public class Thing {
     public String name, info;
-    public Set<String> traits;
+    protected Set<String> traits;
     public List<Thing> contents;
     
     private static void p(Object o) {
         System.out.println(o);
     }
 
+    public boolean HasTrait(String trait) {
+        return traits.contains(trait);
+    }
+
     @Override
     public String toString() {
         return name +  "|" + info + "|" + traits.toString();
     }
+    public Thing FindInContents(String name) {
+        for (Thing t : contents) {
+            if (t.name.equals(name)) {
+                return t;                
+            }
+        }
+        return null;
+    }
+    public Thing RemoveFromContents(String name) {
+        Thing t = FindInContents(name);
+        if (t != null) {
+            int idx = contents.indexOf(t);
+            contents.remove(idx);
+            return t;
+        }
+        return null;
+    }
+
+    public void AddToContents(Thing t) {
+        contents.add(t);
+    }
+    
     public static Map<String, Thing> JSONReadThingList(String filename, String field) throws Exception {
         FileReader reader = new FileReader(filename);
         JSONParser jsonParser = new JSONParser();
@@ -43,7 +69,10 @@ public class Thing {
             JSONArray ta = (JSONArray)(thing.get("traits"));
 
             for (Iterator it = ta.iterator() ; it.hasNext() ; ) {
-                traits.add((String) it.next());
+                String new_trait = (String) it.next();
+                if (new_trait != null) {
+                    traits.add(new_trait);
+                }
             }
         }
     }
@@ -52,10 +81,6 @@ public class Thing {
         this.info = info;
         this.contents = new ArrayList<Thing>();
         this.traits = new HashSet<String>();
-    }
-    public Thing(Thing other) {
-        other = new Thing(name, info);
-        other.traits = new HashSet<String>(other.traits);
     }
 }
 

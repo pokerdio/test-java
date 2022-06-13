@@ -13,6 +13,9 @@ public class Command {
 
     private static Set<String> ignoreSet = new HashSet<String>();
     private static Map<String, String> translate = new HashMap<String,String>();
+    private static Map<Map.Entry<String, String>, String> translate2 = 
+        new HashMap<Map.Entry<String, String>, String>();
+
     public List<String> com;
     public List<String> matchData;
 
@@ -22,6 +25,11 @@ public class Command {
         }
     }
 
+
+    public static void Translation(String word1, String word2, String dest) {
+        Map.Entry<String, String> p = new AbstractMap.SimpleEntry<>(word1, word2);
+        translate2.put(p, dest);
+    }
     public static void Translation(String src, String dest) {
         translate.put(src, dest);
     }
@@ -64,7 +72,9 @@ public class Command {
     }
     public Command (String s) {
         com = new ArrayList<String>();
-        
+
+        String previous = null; 
+        new_word:
         for (String c : s.split("\\W+")) {
             if (ignoreSet.contains(c)) {
                 continue;
@@ -72,7 +82,17 @@ public class Command {
             if (translate.get(c) != null) {
                 c = translate.get(c);
             }
+            if (previous != null) {
+                for (Map.Entry<String, String> pair : translate2.keySet()) {
+                    if (pair.getKey().equals(previous) && pair.getValue().equals(c)) {
+                        com.remove(com.size() - 1);
+                        com.add(translate2.get(pair));
+                        continue new_word;
+                    }
+                }
+            }
             com.add(c);
+            previous = c;
         }
     }
 }

@@ -6,7 +6,6 @@ import globals.*;
 
 public class Game {
     ArrayList<Room> map; 
-    Direction foo; 
 
     public Game() {
         map = new ArrayList<Room>(); 
@@ -22,10 +21,15 @@ public class Game {
         Command.Translation("l", "look");
         Command.Translation("q", "quit");
 
+        Command.Translation("i", "inventory");
+        Command.Translation("inv", "inventory");
+
         Command.Translation("s", "south");
         Command.Translation("n", "north");
         Command.Translation("w", "west");
         Command.Translation("e", "east");
+
+        Command.Translation("kitchen", "sink", "sink");
     }
 
     private static void p(Object s)  {
@@ -35,10 +39,9 @@ public class Game {
 
     public static void main(String[] args) throws IOException {
         BufferedReader in = new BufferedReader (new InputStreamReader(System.in));
-        String s; 
 
         Game game = new Game(); 
-
+        Thing pc = new Thing("me", "...just plain old me."); // player character
         Room r;
         try {
             r = Room.JSONLoad("world.json", "hallway");
@@ -54,16 +57,64 @@ public class Game {
         do {
             System.out.print("> ");
             com = new Command(in.readLine());
-            // p(com);
-            if (com.Match("look")) {
+            if (com.Match("examine")) { //debug command only
+                p(r);
+                p(r.contents);
+            } else if (com.Match("look")) {
                 p(r.info);
                 p("");
                 p(r.ConnectionInfo());
+                p("");
                 p(r.ItemsInfo());
+            } else if (com.Match("look", "?")) {
+                String item_name = com.matchData.get(0);
+                // p("trying to find " + item_name + " in:");
+                // p("=====================================");                
+                // r.contents.forEach(x -> p(x));
+                // p("           ---------");
+                // pc.contents.forEach(x -> p(x));
+                // p("=====================================");
+                Thing t = r.FindInContents(item_name);
+                if (t != null) {
+                    p(t.info);                    
+                } else {
+                    t = pc.FindInContents(item_name);
+                    if (t != null) {
+                        p(t.info);
+                    }
+                }
+            } else if (com.Match("inventory")) {
+                if (pc.contents.size() > 0) {
+                    String s = "You have"; 
+                    String and_a = " a ";
+                    for (Thing t : pc.contents) {
+                        s = s + and_a + t.name;
+                        and_a = " and a ";
+                    }
+                    p(s + ".");
+                } else {
+                    p("You don't carry anything.");
+                }
+            } else if (com.Match("take", "?")) {
+                String item_name = com.matchData.get(0);
+                Thing t = r.RemoveFromContents(item_name);
+                if (t != null && t.HasTrait("pickable")) {
+                    p("You take the " + item_name + ".");
+                    pc.AddToContents(t);
+                } else {
+                    p("You can't take that.");
+                }
+            } else if (com.Match("drop", "?")) {
+                String item_name = com.matchData.get(0);
+                Thing t = pc.RemoveFromContents(item_name);
+                if (t != null) {
+                    p("You drop the " + item_name + ".");
+                    r.AddToContents(t);
+                } else {
+                    p("You don't have a " + item_name + ".");
+                }
             } else if (com.Match("count", "*")) {
                 p("You used " + Integer.toString(com.matchData.size()) + " words.");
-            } else if (com.Match("look", "?")) {
-                p("you try to look at " + com.matchData.get(0));
             } else if (com.Match("go", "?")) {
                 String desto = com.matchData.get(0);
                 if (r.con.containsKey(desto)) {

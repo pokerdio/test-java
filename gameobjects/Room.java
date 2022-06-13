@@ -12,7 +12,7 @@ public class Room extends Thing {
     }
 
     public Map<String, Room> con;
-    public List<Thing> items;
+
     @SuppressWarnings("unchecked")
     public static Room JSONLoad(String filename, String start_room) throws Exception {
         FileReader reader = new FileReader(filename);
@@ -25,6 +25,7 @@ public class Room extends Thing {
         List<String> roomdir = new ArrayList<String>();
         Map<String,Room> rooms = new HashMap<String,Room>();
         Map<String,Thing> world_items = Thing.JSONReadThingList("world.json", "items");;
+        
 
         for (Iterator it = map.iterator() ; it.hasNext() ;){
             JSONObject element = (JSONObject)it.next();
@@ -43,10 +44,12 @@ public class Room extends Thing {
 
             JSONArray room_items = (JSONArray)(element.get("items"));
             if (room_items != null) {
-                room_items.forEach(x -> room.items.add(world_items.get(x)));
-
-                p("items room name " + room.name);
-                p(room.items);
+                for (Object obj : room_items) {
+                    if (world_items.get(obj) == null) {
+                        throw new Exception("bad item " + (String) obj);
+                    }
+                }
+                room_items.forEach(x -> room.contents.add(world_items.get(x)));
             }
         }
 
@@ -63,14 +66,16 @@ public class Room extends Thing {
         con.put(dir, r);
     }
     public String ItemsInfo() {
-        if (items.isEmpty()) {
+        if (contents.isEmpty()) {
             return "";
         }
         String s = "";
         String nl = "";
-        for (Thing t : items) {
-            s = s + nl + "There is a " + t.name + " here.";
-            nl = "\n";
+        for (Thing t : contents) {
+            if (t.HasTrait("visible")) {
+                s = s + nl + "There is a " + t.name + " here.";
+                nl = "\n";
+            }
         }
         return s;
     }
@@ -90,6 +95,5 @@ public class Room extends Thing {
     public Room(String name, String info) {
         super(name, info);
         con = new HashMap<String, Room>();
-        items = new ArrayList<Thing>();
     }
 }
