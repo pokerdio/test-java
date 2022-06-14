@@ -1,15 +1,15 @@
 {"map":[
     {"name":"kitchen",
      "info":"    This is a well furnished kitchen. ", 
-     "items":["refrigerator", "cupboard", "table", "sink"],
-     "traits":["locked_door"],
+     "items":["refrigerator", "cupboard", "table", "sink", "drawer"],
+     "traits":[],
      "links":{"south":"hallway"}},
     {"name":"hallway",
      "info":"    The hallway is completely dark, except for a soft light 
 coming around the edges of doors to the north and east.  ",
      "links":{"north":"kitchen", "east":"living room"},
-     "traits":["locked_door"],
-     "items":["key"]},
+     "traits":[],
+     "items":[]},
 
     {"name":"living room",
      "info":"    A large room well lit room, with wide windows opening to a scenic
@@ -19,23 +19,39 @@ horizon. ",
 ],
  "items":[{"name":"key",
            "info":"This is a small brass key.",
-           "traits":["visible", "pickable"]},
+           "traits":["listable", "pickable"]},
+		  {"name":"batteries",
+		   "indefinite_article": "",
+           "info":"A small pile of batteries.",
+		   "traits":["listable", "pickable"]},
+		  {"name":"bowl",
+           "info":"A small white ceramic bowl.",
+		   "traits":["listable", "pickable"]},
+		  {"name":"drawer",
+		   "info":"A drawer at the top side of the cupboard. 
+<open:It is open.><closed:It is closed.>",
+		   "items":["key"],
+		   "traits":["closed"]}
           {"name":"cupboard",
-           "info":"This is an ordinary kitchen cupboard, with a drawer and a door.",
-           "traits":["visible"]},
+           "info":"This is an ordinary kitchen cupboard, with a drawer 
+and a door. <closed:The cupboard is closed.><open:The cupboard is open.>",
+		   "items":["batteries", "bowl"],
+           "traits":["listable", "closed"]},
           {"name":"table",
            "info":"This is a wide kitchen table, fixed against the western wall, with a
 kitchen sink installed.",
-           "traits":["visible"]},
+           "traits":["listable"]},
           {"name":"refrigerator",
            "info":"This is a large and modern looking refrigerator.",
-           "traits":["visible"]},
+           "traits":["listable"]},
           {"name":"sink",
            "info":"The sink has faucets for cold and hot water.",
-           "traits":["visible"]},
+           "traits":[]},
 
           {"name":"horizon",
-           "info":"Outside the window flat fields forming a patchwork of hues of green are bounded in the distance by forested hills. ",
+           "info":"Outside the window flat fields form a patchwork of 
+hues of green and are bounded in the distance by forested hills.
+It is a bright summer day and the sun is high in the clear blue sky. ",
            "traits":["outside"]}
          ],
 }

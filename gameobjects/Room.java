@@ -65,20 +65,6 @@ public class Room extends Thing {
     public void Connect(Room r, String dir) {
         con.put(dir, r);
     }
-    public String ItemsInfo() {
-        if (contents.isEmpty()) {
-            return "";
-        }
-        String s = "";
-        String nl = "";
-        for (Thing t : contents) {
-            if (t.HasTrait("visible")) {
-                s = s + nl + "There is a " + t.name + " here.";
-                nl = "\n";
-            }
-        }
-        return s;
-    }
     public String ConnectionInfo() {
         if (con.isEmpty()) {
             return "There is no way out of here. ";

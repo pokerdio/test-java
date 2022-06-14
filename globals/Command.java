@@ -47,6 +47,9 @@ public class Command {
             case "?":
                 if (it.hasNext()) {
                     matchData.add(it.next());
+                } else {
+                    matchData = null;
+                    return false;
                 }
                 break;
             case "*":
