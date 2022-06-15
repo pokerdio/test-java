@@ -12,6 +12,7 @@ public class Thing {
     protected String name;
     protected String info;
     protected Set<String> traits;
+    public String contents_prefix;
     private String indefinite_article;
     private String definite_article;
     public List<Thing> contents;
@@ -150,6 +151,13 @@ public class Thing {
     private Thing(JSONObject thing) {
         name = (String)(thing.get("name"));
         info = (String)(thing.get("info"));
+        contents_prefix = "Inside you see ";
+        if (thing.containsKey("contents_prefix")) {
+            contents_prefix = (String)(thing.get("contents_prefix"));
+            if (contents_prefix.charAt(contents_prefix.length()-1) != ' ') {
+                contents_prefix = contents_prefix + " ";
+            }
+        }
         definite_article = "the ";
         indefinite_article = "a ";
         traits = new HashSet<String>();
@@ -186,6 +194,7 @@ public class Thing {
     public Thing (String name, String info) {
         this.indefinite_article = "a ";
         this.definite_article = "the ";
+        this.contents_prefix = "Inside you see ";
         this.name = name;
         this.info = info;
         this.contents = new ArrayList<Thing>();

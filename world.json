@@ -14,44 +14,59 @@ coming around the edges of doors to the north and east.  ",
     {"name":"living room",
      "info":"    A large room well lit room, with wide windows opening to a scenic
 horizon. ",
-     "items":["horizon"],
+     "items":["horizon", "sofa", "tv"],
      "links":{"west":"hallway"}}
 ],
- "items":[{"name":"key",
-           "info":"This is a small brass key.",
-           "traits":["listable", "pickable"]},
-		  {"name":"batteries",
-		   "indefinite_article": "",
-           "info":"A small pile of batteries.",
-		   "traits":["listable", "pickable"]},
-		  {"name":"bowl",
-           "info":"A small white ceramic bowl.",
-		   "traits":["listable", "pickable"]},
-		  {"name":"drawer",
-		   "info":"A drawer at the top side of the cupboard. 
-<open:It is open.><closed:It is closed.>",
-		   "items":["key"],
-		   "traits":["closed"]}
-          {"name":"cupboard",
-           "info":"This is an ordinary kitchen cupboard, with a drawer 
-and a door. <closed:The cupboard is closed.><open:The cupboard is open.>",
-		   "items":["batteries", "bowl"],
-           "traits":["listable", "closed"]},
-          {"name":"table",
-           "info":"This is a wide kitchen table, fixed against the western wall, with a
-kitchen sink installed.",
-           "traits":["listable"]},
-          {"name":"refrigerator",
-           "info":"This is a large and modern looking refrigerator.",
-           "traits":["listable"]},
-          {"name":"sink",
-           "info":"The sink has faucets for cold and hot water.",
-           "traits":[]},
+ "items":[
+	 {"name":"tv",
+      "info":"A wide screen TV is fixed on the wall to the kitchen. 
+<off:It is turned off.><on:It is showing a news program.>",
+      "traits":["listable", "off"]},
 
-          {"name":"horizon",
-           "info":"Outside the window flat fields form a patchwork of 
+	 {"name":"sofa",
+      "info":"A comfy purple sofa.",
+	  "contents_prefix":"Between the sofa's pillows there's a",
+	  "items":["remote"],
+      "traits":["listable", "closed"]},
+	 {"name":"remote",
+      "info":"A black remote control, with buttons for powering the TV and changing channels. <powered:A red LED light on the remote is lit.>",
+	  "items":["remote"],
+      "traits":["listable", "pickable"]}
+	 {"name":"key",
+      "info":"This is a small brass key.",
+      "traits":["listable", "pickable"]},
+	 {"name":"batteries",
+	  "indefinite_article": "",
+      "info":"A small pile of batteries.",
+	  "traits":["listable", "pickable"]},
+	 {"name":"bowl",
+      "info":"A small white ceramic bowl.",
+	  "traits":["listable", "pickable"]},
+	 {"name":"drawer",
+	  "info":"A drawer at the top side of the cupboard. 
+<open:It is open.><closed:It is closed.>",
+	  "items":["key"],
+	  "traits":["closed"]}
+     {"name":"cupboard",
+      "info":"This is an ordinary kitchen cupboard, with a drawer 
+and a door. <closed:The cupboard is closed.><open:The cupboard is open.>",
+	  "items":["batteries", "bowl"],
+      "traits":["listable", "closed"]},
+     {"name":"table",
+      "info":"This is a wide kitchen table, fixed against the western wall, with a
+kitchen sink installed.",
+      "traits":["listable"]},
+     {"name":"refrigerator",
+      "info":"This is a large and modern looking refrigerator.",
+      "traits":["listable"]},
+     {"name":"sink",
+      "info":"The sink has faucets for cold and hot water.",
+      "traits":[]},
+
+     {"name":"horizon",
+      "info":"Outside the window flat fields form a patchwork of 
 hues of green and are bounded in the distance by forested hills.
 It is a bright summer day and the sun is high in the clear blue sky. ",
-           "traits":["outside"]}
-         ],
+      "traits":["outside"]}
+ ],
 }

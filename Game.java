@@ -15,6 +15,9 @@ public class Game {
         Command.IgnoreWords("the", "a", "an", "to");
 
         Command.Translation("o", "open");
+        Command.Translation("television", "tv");
+        Command.Translation("telly", "tv");
+        Command.Translation("tube", "tv");
         Command.Translation("see", "look");
         Command.Translation("watch", "look");
         Command.Translation("ogle", "look");
@@ -25,12 +28,20 @@ public class Game {
         Command.Translation("i", "inventory");
         Command.Translation("inv", "inventory");
 
+        Command.Translation("insert", "put");
+        Command.Translation("stick", "put"); 
+        
         Command.Translation("s", "south");
         Command.Translation("n", "north");
         Command.Translation("w", "west");
         Command.Translation("e", "east");
 
+
+        Command.Translation("turn", "on", "power");
+        Command.Translation("tv", "set", "tv");
+        Command.Translation("tv", "tube", "tv");                
         Command.Translation("kitchen", "sink", "sink");
+        Command.Translation("remote", "control", "remote");        
     }
 
     private static void p(Object s)  {
@@ -115,7 +126,7 @@ public class Game {
                 if (t != null) {
                     p(t.GetInfo());
                     if(t.HasTrait("open")) {
-                        String contents_info = t.ItemsInfo("Inside you see ", ".");
+                        String contents_info = t.ItemsInfo(t.contents_prefix, ".");
                         if (!contents_info.equals ("")) {
                             p(contents_info);
                         }
@@ -187,6 +198,62 @@ public class Game {
                 } else {
                     p("You cannot go there.");
                 }
+            } else if (com.Match("use", "batteries", "remote") ||
+                       com.Match("put", "batteries", "remote") || 
+                       com.Match("", "batteries", "remote"))  {
+
+                if (null == pc.FindInContents("batteries"))  {
+                    p("You don't have any batteries.");
+                    continue;
+                }
+
+                Thing remote = pc.FindInContents("remote");
+                if (remote == null)  {
+                    p("You don't have a remote.");
+                    continue;
+                }
+                if (remote.HasTrait("powered")) {
+                    p("The remote control is already powered.");
+                }
+                p("You insert new batteries in the remote control. ");
+                remote.AddTrait("powered");
+            } else if (com.Match("search", "sofa")) {
+                Thing sofa = r.FindInContents("sofa");
+                if (sofa != null) {
+                    if (sofa.HasTrait("closed")) {
+                        p("Between the pillows of the sofa you find a remote control. ");
+                        sofa.RemoveTrait("closed");
+                        sofa.AddTrait("open");
+                    }
+                } else {
+                    p("There is no such thing here.");
+                }
+            } else if ((com.Match("power", "tv")) ||
+                       (com.Match("use", "remote")) ||
+                       (com.Match("use", "remote", "tv")) ||
+                       (com.Match("activate", "tv"))) {
+                Thing tv = r.FindInContents("tv");
+                if(tv == null) {
+                    p("No TV here.");
+                    continue;
+                }
+
+                Thing remote = pc.FindInContents("remote");
+                if (remote == null) {
+                    p("You don't have a remote.");
+                    continue;
+                }
+                if (!remote.HasTrait("powered")) {
+                    p("The remote is not powered.");
+                    continue;
+                }
+                if (tv.HasTrait("on")) {
+                    p("The TV is already on.");
+                    continue;
+                }
+                p("You turn on the TV.");
+                tv.AddTrait("on");
+                tv.RemoveTrait("off");
             }
         } while (!com.Match("quit")); 
     }
