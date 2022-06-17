@@ -58,11 +58,16 @@ public class Command {
                 }
                 break; 
             default:
+                c = c.toLowerCase();
+                Set<String> words = new HashSet(Arrays.asList(c.split("\\|")));
                 if (it.hasNext()) {
-                    if (!c.equals(it.next())) {
+                    if (!words.contains(it.next())) {
                         matchData = null;
                         return false;
                     }
+                } else {
+                    matchData = null;
+                    return false;
                 }
             }
         }
@@ -79,6 +84,7 @@ public class Command {
         String previous = null; 
         new_word:
         for (String c : s.split("\\W+")) {
+            c = c.toLowerCase();
             if (ignoreSet.contains(c)) {
                 continue;
             }

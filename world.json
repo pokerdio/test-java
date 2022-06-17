@@ -1,18 +1,18 @@
 {"map":[
     {"name":"kitchen",
-     "info":"    This is a well furnished kitchen. ", 
+     "info":"This is a well furnished kitchen. ", 
      "items":["refrigerator", "cupboard", "table", "sink", "drawer"],
      "traits":[],
      "links":{"south":"hallway"}},
     {"name":"hallway",
-     "info":"    The hallway is completely dark, except for a soft light 
+     "info":"The hallway is completely dark, except for a soft light 
 coming around the edges of doors to the north and east.  ",
      "links":{"north":"kitchen", "east":"living room"},
      "traits":[],
      "items":[]},
 
     {"name":"living room",
-     "info":"    A large room well lit room, with wide windows opening to a scenic
+     "info":"A large room well lit room, with wide windows opening to a scenic
 horizon. ",
      "items":["horizon", "sofa", "tv"],
      "links":{"west":"hallway"}}
@@ -40,8 +40,18 @@ horizon. ",
       "info":"A small pile of batteries.",
 	  "traits":["listable", "pickable"]},
 	 {"name":"bowl",
-      "info":"A small white ceramic bowl.",
+      "info":"A small white ceramic bowl<milk: filled with milk><water: filled with water>.",
 	  "traits":["listable", "pickable"]},
+	 {"name":"milk",
+	  "display_name": "jug of milk"
+      "info":"A large jug of milk.",
+	  "traits":["listable"]},
+
+	 {"name":"apple",
+	  "indefinite_article": "an",
+      "info":"A large flawless green apple.",
+	  "traits":["listable", "pickable", "edible"]},
+
 	 {"name":"drawer",
 	  "info":"A drawer at the top side of the cupboard. 
 <open:It is open.><closed:It is closed.>",
@@ -57,8 +67,10 @@ and a door. <closed:The cupboard is closed.><open:The cupboard is open.>",
 kitchen sink installed.",
       "traits":["listable"]},
      {"name":"refrigerator",
-      "info":"This is a large and modern looking refrigerator.",
-      "traits":["listable"]},
+      "info":"This is a large and modern looking refrigerator.<open: The fridge door 
+is open and the light inside is on.>",
+	  "items":["milk", "apple"],
+      "traits":["listable", "closed"]},
      {"name":"sink",
       "info":"The sink has faucets for cold and hot water.",
       "traits":[]},

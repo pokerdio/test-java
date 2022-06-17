@@ -11,17 +11,20 @@ public class Game {
         map = new ArrayList<Room>(); 
     }
     private static void InitializeCommand() {
-        Command.IgnoreWords("to", "from", "at");
+        Command.IgnoreWords("to", "from", "at", "in", "with");
         Command.IgnoreWords("the", "a", "an", "to");
 
         Command.Translation("o", "open");
         Command.Translation("television", "tv");
         Command.Translation("telly", "tv");
         Command.Translation("tube", "tv");
+        Command.Translation("fridge", "refrigerator");
         Command.Translation("see", "look");
         Command.Translation("watch", "look");
         Command.Translation("ogle", "look");
         Command.Translation("exa", "examine");
+        Command.Translation("x", "examine");
+        
         Command.Translation("l", "look");
         Command.Translation("q", "quit");
 
@@ -38,10 +41,12 @@ public class Game {
 
 
         Command.Translation("turn", "on", "power");
+        Command.Translation("jug", "milk", "milk");
         Command.Translation("tv", "set", "tv");
         Command.Translation("tv", "tube", "tv");                
         Command.Translation("kitchen", "sink", "sink");
         Command.Translation("remote", "control", "remote");        
+
     }
 
     private static void p(Object s)  {
@@ -67,18 +72,32 @@ public class Game {
         Command com;
         InitializeCommand();
 
-
+        p("==============test================");
+        com = new Command("use batteries");
+        p(com.Match("use", "batteries", "remote"));
+        p("============end test==============");
         do {
             System.out.print("> ");
             com = new Command(in.readLine());
             if (com.Match("examine")) { //debug command only
+                p("=========r==========");
                 p(r);
                 p(r.contents);
+                p("=========pc==========");
+                p(pc);
+                p("=========inv=========");
+                p(pc.contents);
+                p("---------------------");
+
             } else if (com.Match("open", "?")) {
                 String item_name = com.matchData.get(0);
                 Thing t = r.FindInContents(item_name);
                 if (t == null || !t.HasTrait("closed")) {
-                    p("You can't open that.");
+                    if (t.HasTrait("open")) {
+                        p("It's already open.");
+                    } else {
+                        p("You can't open that.");
+                    }
                 } else {
                     if (t.HasTrait("locked")) {
                         p("The " + item_name + " is locked.");
@@ -92,7 +111,11 @@ public class Game {
                 String item_name = com.matchData.get(0);
                 Thing t = r.FindInContents(item_name);
                 if (t == null || !t.HasTrait("open")) {
-                    p("You can't close that.");
+                    if (t.HasTrait("closed")) {
+                        p("It's already closed.");
+                    } else {
+                        p("You can't close that.");
+                    }
                 } else {
                     t.RemoveTrait("open");
                     t.AddTrait("closed");
@@ -144,12 +167,20 @@ public class Game {
                     String s = "You have"; 
                     String and = " ";
                     for (Thing t : pc.contents) {
-                        s = s + and + t.GetName(Thing.INDEFINITE_ARTICLE);
+                        s = s + and + t.GetName(Thing.INDEF_ART);
                         and = " and ";
                     }
                     p(s + ".");
                 } else {
                     p("You don't carry anything.");
+                }
+            } else if (com.Match("take", "milk", "refrigerator")) {
+                Thing fridge = r.FindInContents("refrigerator");
+                if ((null != fridge) && fridge.HasTrait("open") && 
+                    (fridge.FindInContents("milk") != null)) {
+                    p("You'd rather not carry that around, it is too heavy. ");
+                } else {
+                    p("You can't take that.");
                 }
             } else if (com.Match("take", "?", "?")) {
                 String item_name = com.matchData.get(0);
@@ -194,13 +225,16 @@ public class Game {
                 String desto = com.matchData.get(0);
                 if (r.con.containsKey(desto)) {
                     r = r.con.get(desto);
-                    p("You go " + desto + " into " + r.GetName(Thing.DEFINITE_ARTICLE) + ".");
+                    p("You go " + desto + " into " + r.GetName(Thing.DEF_ART) + ".");
                 } else {
                     p("You cannot go there.");
                 }
             } else if (com.Match("use", "batteries", "remote") ||
                        com.Match("put", "batteries", "remote") || 
-                       com.Match("", "batteries", "remote"))  {
+                       com.Match("charge", "remote") ||
+                       com.Match("replace", "batteries") ||
+                       com.Match("replace", "batteries", "remote") 
+                )  {
 
                 if (null == pc.FindInContents("batteries"))  {
                     p("You don't have any batteries.");
@@ -209,7 +243,7 @@ public class Game {
 
                 Thing remote = pc.FindInContents("remote");
                 if (remote == null)  {
-                    p("You don't have a remote.");
+                    p("You don't have anything that needs replacing batteries.");
                     continue;
                 }
                 if (remote.HasTrait("powered")) {
@@ -254,7 +288,105 @@ public class Game {
                 p("You turn on the TV.");
                 tv.AddTrait("on");
                 tv.RemoveTrait("off");
-            }
+            } else  if (com.Match("use", "batteries")) {
+                if(null != pc.FindInContents("batteries")) {
+                    p("You chain a few batteries and touch the plus " +
+                      "and minus to your tongue. ZAP! Ouch.");
+                } else {
+                    p("What batteries?");
+                }
+            } else if (com.Match("eat", "?")) {
+                String food_name = com.matchData.get(0);
+                Thing food = pc.FindInContents(food_name);
+                if (null != food && food.HasTrait("edible")) {
+                    p("You eat " + food.GetName(Thing.DEF_ART) + ".");
+                    pc.RemoveFromContents(food_name);
+                } else {
+                    p("You can't eat that.");
+                }
+            } else if (com.Match("drink", "?")) {
+                String drink_name = com.matchData.get(0);
+
+                Thing drink = pc.FindInContents(drink_name);
+                if (drink == null) {
+                    drink = r.FindInContents(drink_name);
+                }
+                if (null != drink) {
+                    if (drink.HasTrait("water")) {
+                        p("You drink the water from " + 
+                          drink.GetName(Thing.DEF_ART) + ".");
+                        drink.RemoveTrait("water");
+                    } else if (drink.HasTrait("milk")) {
+                        p("You drink the milk from " + 
+                          drink.GetName(Thing.DEF_ART) + ".");
+                        drink.RemoveTrait("milk");
+                    } else {
+                        p("You can't drink that.");
+                    }
+                } else {
+                    p("You can't drink that.");
+                }
+            } else if (com.Match("fill|put|pour", "bowl", "milk", "*") ||
+                       com.Match("fill|put|pour", "milk", "bowl", "*")) { 
+                Thing bowl = pc.FindInContents("bowl");
+                if (null == bowl) {
+                    p("You don't have a bowl.");
+                    continue;
+                } 
+                Thing fridge = r.FindInContents("refrigerator");
+                if ((fridge == null) || !fridge.HasTrait("open") || 
+                    (fridge.FindInContents("milk") == null)) {
+                    p("There's no milk here.");
+                    continue;
+                }
+                if(bowl.HasTrait("water")) {
+                    p("The bowl is already filled with water.");
+                    continue;
+                }
+                if(bowl.HasTrait("milk")) {
+                    p("The bowl is already filled with milk.");
+                    continue;
+                }
+                p("You fill the bowl with milk from the jug in the refrigerator.");
+                bowl.AddTrait("milk");
+            } else if (com.Match("fill|put|pour", "bowl", "water", "*") ||
+                       com.Match("fill|put|pour", "water", "bowl", "*")) {
+                Thing bowl = pc.FindInContents("bowl");
+                if (null == bowl) {
+                    p("You don't have a bowl.");
+                    continue;
+                } 
+                if(bowl.HasTrait("water")) {
+                    p("The bowl is already filled with water.");
+                    continue;
+                }
+                if(bowl.HasTrait("milk")) {
+                    p("The bowl is already filled with milk.");
+                    continue;
+                }
+                p("You fill the bowl with water from the kitchen sink.");
+                bowl.AddTrait("water");
+            } else if (com.Match("empty", "bowl", "*")) {
+                Thing bowl = pc.FindInContents("bowl");
+                if (null == bowl) {
+                    p("You don't have a bowl.");
+                    continue;
+                } 
+                if(!bowl.HasTrait("water") && !bowl.HasTrait("milk")) {
+                    p("The bowl is already empty.");
+                    continue;
+                }
+                if (null != r.FindInContents("sink")) {
+                    p("You empty out the bowl into the sink.");
+                    bowl.RemoveTrait("water");
+                    bowl.RemoveTrait("milk");
+                    continue;
+                }
+                p("Nothing seems suitable for disposing of unwanted liquid here.");
+            } else {
+                p("You can't do that.");
+            } 
+
         } while (!com.Match("quit")); 
     }
 }

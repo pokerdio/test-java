@@ -10,6 +10,7 @@ import org.json.simple.parser.*;
 
 public class Thing {
     protected String name;
+    protected String display_name; 
     protected String info;
     protected Set<String> traits;
     public String contents_prefix;
@@ -17,22 +18,40 @@ public class Thing {
     private String definite_article;
     public List<Thing> contents;
 
-    public static final int DEFINITE_ARTICLE = 1;
-    public static final int INDEFINITE_ARTICLE = 2;
+    public static final int DEF_ART = 1;
+    public static final int INDEF_ART = 2;
     public static final int NO_ARTICLE = 3;
 
     private List<String> contents_by_name; //intermediate values that feed contents
 
+
     public String GetName(int article) {
+        String s;
+        if (display_name == null) {
+            s = name;
+        } else {
+            s = display_name; 
+        }
         switch (article) {
-        case DEFINITE_ARTICLE:
-            return definite_article + name;
-        case INDEFINITE_ARTICLE:
-            return indefinite_article + name;
+        case DEF_ART:
+            return definite_article + s;
+        case INDEF_ART:
+            return indefinite_article + s;
         default:
             return name;
         }
     }
+
+    private String AppendSpace(String s) {
+        if ("".equals(s)) {
+            return "";
+        }
+        if (s.charAt(s.length()-1) != ' ') {
+                s = s + " ";
+        }
+        return s;
+    }
+
     public String GetName() {
         return name;
     }
@@ -48,7 +67,7 @@ public class Thing {
             i = i.replaceAll("<"+s+":([^>]*)>", "$1");
         }
         i = i.replaceAll("<[^>]*>", "");
-        return i;
+        return "    " + i;
     }
 
     public String ItemsInfo(String prefix, String postfix) {
@@ -68,9 +87,9 @@ public class Thing {
         for (Thing t : contents) {
             if (t.HasTrait("listable")) {
                 if (count == 1) {
-                    return prefix + t.GetName(INDEFINITE_ARTICLE) + postfix; 
+                    return prefix + t.GetName(INDEF_ART) + postfix; 
                 } else {
-                    s = s + and + t.GetName(INDEFINITE_ARTICLE);
+                    s = s + and + t.GetName(INDEF_ART);
                     and = " and ";
                 }
             }
@@ -147,7 +166,8 @@ public class Thing {
         return ret;
     }
 
-    // private because it doesn't read 
+    // private because it doesn't completely initialize all the properties
+    // this only gets called from the world loading function in a subclass
     private Thing(JSONObject thing) {
         name = (String)(thing.get("name"));
         info = (String)(thing.get("info"));
@@ -174,11 +194,15 @@ public class Thing {
             }
         }
         if (thing.containsKey("indefinite_article")) {
-            indefinite_article = (String)thing.get("indefinite_article");
+            indefinite_article = AppendSpace((String)thing.get("indefinite_article"));
+        }
+
+        if (thing.containsKey("display_name")) {
+            display_name = (String)thing.get("display_name");
         }
 
         if (thing.containsKey("definite_article")) {
-            definite_article = (String)thing.get("definite_article");
+            definite_article = AppendSpace((String)thing.get("definite_article"));
         }
         if (thing.containsKey("items")) {
             JSONArray ta = (JSONArray)(thing.get("items"));
