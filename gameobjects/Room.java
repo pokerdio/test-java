@@ -11,7 +11,7 @@ public class Room extends Thing {
         System.out.println(o);
     }
 
-    public Map<String, Room> con;
+    public Map<String, Room> con; //connections to other rooms
 
     @SuppressWarnings("unchecked")
     public static Room JSONLoad(String filename, String start_room) throws Exception {
@@ -29,10 +29,11 @@ public class Room extends Thing {
 
         for (Iterator it = map.iterator() ; it.hasNext() ;){
             JSONObject element = (JSONObject)it.next();
-            String name = (String)element.get("name");
-            String info = (String)element.get("info");
             JSONObject links = (JSONObject)element.get("links");
-            Room room = new Room(name, info);
+            Room room = new Room(element);
+            String name = room.name;
+            String info = room.info;
+
             rooms.put(name, room);
 
             for (Iterator it2 = links.keySet().iterator() ; it2.hasNext() ; ){
@@ -41,7 +42,6 @@ public class Room extends Thing {
                 roomdir.add(dir);
                 roomto.add((String)links.get(dir));
             }
-
             JSONArray room_items = (JSONArray)(element.get("items"));
             if (room_items != null) {
                 for (Object obj : room_items) {
@@ -57,13 +57,39 @@ public class Room extends Thing {
         Iterator<String> itto=roomto.iterator();
         Iterator<String> itdir = roomdir.iterator();
         for (; itfrom.hasNext();) {
-            rooms.get(itfrom.next()).Connect(rooms.get(itto.next()), itdir.next());
+            String sfrom = itfrom.next();
+            String sto = itto.next();
+            String sdir = itdir.next();
+            rooms.get(sfrom).Connect(rooms.get(sto), sdir);
         }
         return rooms.get(start_room);
     }
 
     public void Connect(Room r, String dir) {
         con.put(dir, r);
+    }
+
+
+    protected String Capitalize(String s) {
+        if("".equals(s) || null == s)  {
+            return "";
+        }
+        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+    }
+
+    protected String TowardsPrefix(String direction) {
+        switch(direction) {
+        case "north":
+        case "south":
+        case "east":                
+        case "west":
+            return "Towards " + direction + " there is the ";
+        case "up":
+        case "down":
+            return Capitalize(direction + "wards there is the ");
+        default:
+            return "ERROR";
+        }
     }
     public String ConnectionInfo() {
         if (con.isEmpty()) {
@@ -72,13 +98,17 @@ public class Room extends Thing {
         String s = ""; 
         String nl = "";
         for (String dir : con.keySet()) {
-            s += nl + "Towards " + dir + " there is the " + con.get(dir).name + ".";
+            s += nl + TowardsPrefix(dir) + con.get(dir).name + ".";
             nl = "\n";
         }
         return s;
     }
     public Room(String name, String info) {
         super(name, info);
+        con = new HashMap<String, Room>();
+    }
+    protected Room(JSONObject obj) {
+        super(obj);
         con = new HashMap<String, Room>();
     }
 }

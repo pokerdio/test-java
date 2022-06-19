@@ -85,9 +85,6 @@ public class Command {
         new_word:
         for (String c : s.split("\\W+")) {
             c = c.toLowerCase();
-            if (ignoreSet.contains(c)) {
-                continue;
-            }
             if (translate.get(c) != null) {
                 c = translate.get(c);
             }
@@ -99,6 +96,9 @@ public class Command {
                         continue new_word;
                     }
                 }
+            }
+            if (ignoreSet.contains(c)) {
+                continue;
             }
             com.add(c);
             previous = c;

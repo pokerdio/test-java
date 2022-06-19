@@ -74,6 +74,7 @@ public class Thing {
         if (contents.isEmpty()) {
             return "";
         }
+
         String s = "";
 
         int count = 0;
@@ -81,6 +82,9 @@ public class Thing {
             if (t.HasTrait("listable")) {
                 count += 1;
             }
+        }
+        if (count == 0) {
+            return "";
         }
 
         String and = "";
@@ -102,7 +106,7 @@ public class Thing {
     public boolean HasTrait(String trait) {
         return traits.contains(trait);
     }
-    public void RemoveTrait(String trait) {
+    public void DelTrait(String trait) {
         if (HasTrait(trait)) {
             traits.remove(trait);
         }
@@ -111,13 +115,16 @@ public class Thing {
     public void AddTrait(String trait){
         traits.add(trait);
     }
-
+    public void ReplaceTrait(String src, String dest) {
+        DelTrait(src);
+        AddTrait(dest);
+    }
 
     @Override
     public String toString() {
         return name +  "|" + info + "|" + traits.toString();
     }
-    public Thing FindInContents(String name) {
+    public Thing Has(String name) {
         for (Thing t : contents) {
             if (t.name.equals(name)) {
                 return t;                
@@ -126,7 +133,7 @@ public class Thing {
         return null;
     }
     public Thing RemoveFromContents(String name) {
-        Thing t = FindInContents(name);
+        Thing t = Has(name);
         if (t != null) {
             int idx = contents.indexOf(t);
             contents.remove(idx);
@@ -166,9 +173,9 @@ public class Thing {
         return ret;
     }
 
-    // private because it doesn't completely initialize all the properties
+    // protected because it doesn't completely initialize all the properties
     // this only gets called from the world loading function in a subclass
-    private Thing(JSONObject thing) {
+    protected Thing(JSONObject thing) {
         name = (String)(thing.get("name"));
         info = (String)(thing.get("info"));
         contents_prefix = "Inside you see ";
