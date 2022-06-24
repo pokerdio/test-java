@@ -70,26 +70,22 @@ public class Room extends Thing {
     }
 
 
-    protected String Capitalize(String s) {
-        if("".equals(s) || null == s)  {
-            return "";
-        }
-        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
-    }
-
-    protected String TowardsPrefix(String direction) {
+    protected String TowardsPrefix(String direction, String through_a) {
         switch(direction) {
         case "north":
         case "south":
         case "east":                
         case "west":
-            return "Towards " + direction + " there is the ";
+            return "Towards " + direction + through_a + " there is the ";
         case "up":
         case "down":
-            return Capitalize(direction + "wards there is the ");
+            return Capitalize(direction + "wards" + through_a + " there is the ");
         default:
             return "ERROR";
         }
+    }
+    public String BlockTrait(String dir) {
+        return "block." + name + "." + dir;
     }
     public String ConnectionInfo() {
         if (con.isEmpty()) {
@@ -98,7 +94,12 @@ public class Room extends Thing {
         String s = ""; 
         String nl = "";
         for (String dir : con.keySet()) {
-            s += nl + TowardsPrefix(dir) + con.get(dir).name + ".";
+            Thing t = Has("", BlockTrait(dir));
+            String through_a = "";
+            if (t != null) {
+                through_a = ", through a " + t.generic_name + ",";
+            }
+            s += nl + TowardsPrefix(dir, through_a) + con.get(dir).name + ".";
             nl = "\n";
         }
         return s;

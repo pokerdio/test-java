@@ -1,0 +1,49 @@
+;first line: ignore words (use an empty line for no ignored words)
+to,from,at,in,with,inside,the,a,an,to,on
+;word->word translations
+r,restart
+o,open
+television,tv
+telly,tv
+tube,tv
+fridge,refrigerator
+see,look
+watch,look
+ogle,look
+exa,examine
+x,examine
+window,outside
+l,look
+q,quit
+i,inventory
+inv,inventory
+insert,put
+stick,put
+s,south
+n,north
+w,west
+e,east
+downstairs,down
+downstair,down
+d,down
+u,up
+upstairs,up			
+upstair,up 
+; word word -> word translations
+up,stair,up
+up,stairs,up
+down,stair,down
+down,stairs,down
+turn,on,power
+climb,stairs,up
+castle,key,castle key
+bathroom,key,bathroom key
+castle,door,castle door
+bathroom,door,bathroom door
+turn,off,unpower
+light,switch,switch
+jug,milk,milk
+tv,set,tv
+tv,tube,tv
+kitchen,sink,sink
+remote,control,remote

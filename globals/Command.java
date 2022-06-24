@@ -1,5 +1,6 @@
 package globals;
 import java.util.*;
+import java.io.*;
 
 public class Command {
     private static void p(Object s) {
@@ -19,18 +20,46 @@ public class Command {
     public List<String> com;
     public List<String> matchData;
 
+    public static void LoadConfig(String file_name) throws IOException {
+        File f = new File(file_name);
+        FileReader fr = new FileReader(f);
+        BufferedReader br = new BufferedReader(fr);
+        String s;
+        boolean firstLine = true;
+        while((s = br.readLine()) != null) {
+            s = s.trim();
+            if (s.startsWith(";")) {
+                continue;
+            }
+
+            if (firstLine) {
+                firstLine = false;
+                IgnoreWords(s.split(","));
+            } else {
+                String[] words = s.split(",");
+                if(words.length == 2) {
+                    Translation(words[0], words[1]);
+                }
+                if(words.length == 3) {
+                    Translation(words[0], words[1], words[2]);
+                }
+            }
+        }
+    }
+
     public static void IgnoreWords(String... ignoreWords) {
         for (String w : ignoreWords) {
             ignoreSet.add(w);
         }
     }
 
-
     public static void Translation(String word1, String word2, String dest) {
+        //p("translate 2:" + word1 + "+" + word2 + "->" + dest + ".");
         Map.Entry<String, String> p = new AbstractMap.SimpleEntry<>(word1, word2);
         translate2.put(p, dest);
     }
     public static void Translation(String src, String dest) {
+        //p("translate:" + src + "->" + dest + ".");
         translate.put(src, dest);
     }
 

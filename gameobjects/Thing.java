@@ -2,7 +2,7 @@ package gameobjects;
 
 import java.io.*;
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 import org.json.simple.*;
 import org.json.simple.parser.*;
@@ -10,6 +10,7 @@ import org.json.simple.parser.*;
 
 public class Thing {
     protected String name;
+    protected String generic_name; 
     protected String display_name; 
     protected String info;
     protected Set<String> traits;
@@ -65,7 +66,9 @@ public class Thing {
         String i = this.info;
         for (String s : traits) {
             i = i.replaceAll("<"+s+":([^>]*)>", "$1");
+            i = i.replaceAll("<!"+s+"[^>]*>", "");
         }
+        i = i.replaceAll("<![^:]*:([^>]*)>", "$1");
         i = i.replaceAll("<[^>]*>", "");
         return "    " + i;
     }
@@ -101,11 +104,87 @@ public class Thing {
         return prefix + s + postfix;
     }
 
-
-
-    public boolean HasTrait(String trait) {
-        return traits.contains(trait);
+    private boolean HasTraitAtom(String atom_sentence) {
+        atom_sentence = atom_sentence.trim();
+        if ("!".equals(atom_sentence.substring(0, 1))) {
+            String s = atom_sentence.substring(1).trim();
+            return !traits.contains(s);
+        } else {
+            return traits.contains(atom_sentence);
+        }
     }
+
+    //make sure when calling no "|" are given in the parameter
+    private boolean HasTraitAnd(String and_sentence) {
+        for (String s : and_sentence.split("\\&")) {
+            s = s.trim();
+            if (!HasTraitAtom(s)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    // handles logical or and logical and of multiple traits
+    // a&b|c&d parses as (a&b) | (c&d)
+    public boolean HasTrait(String trait_sentence) {
+        for (String and_sentence : trait_sentence.split("\\|")) {
+            and_sentence = and_sentence.trim();
+            if (HasTraitAnd(and_sentence)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void TestHasTrait_RunTest(Thing t, String s, boolean desired_result)  throws Exception {
+        Boolean result = new Boolean(t.HasTrait(s));
+        if (Boolean.compare(result, new Boolean(desired_result)) != 0) {
+            String traits_s = t.traits.stream().collect(Collectors.joining(","));
+            throw new Exception(String.format("traits:" + traits_s + " query:" + s + 
+                                              " return:" + result.toString()));
+        }
+    }
+    public static void TestHasTrait() throws Exception {
+        Thing t = new Thing("test", "used to test");
+        TestHasTrait_RunTest(t, "foo", false);
+        TestHasTrait_RunTest(t, "foo|bar", false);
+        TestHasTrait_RunTest(t, "foo&bar", false);
+
+        t.AddTrait("foo");
+        t.AddTrait("bar");
+
+        TestHasTrait_RunTest(t, "foo", true);
+        TestHasTrait_RunTest(t, "bar", true); 
+        TestHasTrait_RunTest(t, "foo|bar", true);       
+        TestHasTrait_RunTest(t, "foo|boo", true);       
+        TestHasTrait_RunTest(t, "boo|bar", true);       
+        TestHasTrait_RunTest(t, "boo|belch", false);
+        TestHasTrait_RunTest(t, "foo&boo|belch&bar", false);        
+        TestHasTrait_RunTest(t, "foo&bar|belch&boo|bro", true);
+        TestHasTrait_RunTest(t, "foo&!boo|belch&bar", true);
+        TestHasTrait_RunTest(t, "foo&boo|!belch&bar", true);
+        TestHasTrait_RunTest(t, "foo&!bar|belch&boo|bro", false);
+        TestHasTrait_RunTest(t, "!foo&!bar|belch&!boo|bro", false);
+        TestHasTrait_RunTest(t, "!foo&!bar|belch&!boo|!bro", true);
+        TestHasTrait_RunTest(t, "!foo&!bar|!belch&!boo|!bro", true);
+        TestHasTrait_RunTest(t, "foo&bar|belch&!boo|!bro", true);
+        TestHasTrait_RunTest(t, "foo&!boo|belch&!boo|bro", true);
+        TestHasTrait_RunTest(t, "!foo&!boo|belch&!boo|!bar", false);
+    }
+
+    public int AdvanceTraitState(String trait_id, int N) {
+        for (String s : traits) {
+            if (s.startsWith(trait_id)) {
+                int state = Integer.parseInt(s.substring(trait_id.length() + 1));
+                state = (state + 1) % N;
+                ReplaceTrait(s, trait_id + "." + String.valueOf(state));
+                return state;
+            }
+        } 
+        AddTrait(trait_id + ".0");
+        return 0;
+    }
+
     public void DelTrait(String trait) {
         if (HasTrait(trait)) {
             traits.remove(trait);
@@ -122,11 +201,24 @@ public class Thing {
 
     @Override
     public String toString() {
-        return name +  "|" + info + "|" + traits.toString();
+        String s = name;
+        if(!generic_name.equals(name)) {
+            s = s + "(" + generic_name + ")";
+        }
+        return s +  "|" + info + "|" + traits.toString() + "\n";
     }
-    public Thing Has(String name) {
+    public Thing Has(String s, String trait) {
         for (Thing t : contents) {
-            if (t.name.equals(name)) {
+            if (("".equals(s) || t.name.equals(s) || t.generic_name.equals(s)) && 
+                t.HasTrait(trait)) {
+                return t;
+            }
+        }
+        return null;
+    }
+    public Thing Has(String s) {
+        for (Thing t : contents) {
+            if (t.name.equals(s) || t.generic_name.equals(s)) {
                 return t;                
             }
         }
@@ -177,6 +269,11 @@ public class Thing {
     // this only gets called from the world loading function in a subclass
     protected Thing(JSONObject thing) {
         name = (String)(thing.get("name"));
+        if (thing.containsKey("generic_name")) {
+            generic_name = (String)(thing.get("generic_name"));
+        } else {
+            generic_name = name;
+        }
         info = (String)(thing.get("info"));
         contents_prefix = "Inside you see ";
         if (thing.containsKey("contents_prefix")) {
@@ -227,10 +324,32 @@ public class Thing {
         this.definite_article = "the ";
         this.contents_prefix = "Inside you see ";
         this.name = name;
+        this.generic_name = name;
         this.info = info;
         this.contents = new ArrayList<Thing>();
         this.traits = new HashSet<String>();
         this.contents_by_name = new ArrayList<String>();
+    }
+
+
+    public static String Capitalize(String s) {
+        if("".equals(s) || null == s)  {
+            return "";
+        }
+        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+    }
+    
+
+
+    //returns a "key.key name" trait if present - doors & other unlockables
+    //to identify the key that can unlock it
+    public String KeyTrait() { 
+        for (String tr : traits) {
+            if (tr.startsWith("key.")) {
+                return tr;
+            }
+        }
+        return null;
     }
 }
 
