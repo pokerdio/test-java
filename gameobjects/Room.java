@@ -94,6 +94,9 @@ public class Room extends Thing {
         String s = ""; 
         String nl = "";
         for (String dir : con.keySet()) {
+            if ("enter".equals(dir)) {
+                continue;
+            }
             Thing t = Has("", BlockTrait(dir));
             String through_a = "";
             if (t != null) {
@@ -104,11 +107,11 @@ public class Room extends Thing {
         }
         return s;
     }
-    public Room(String name, String info) {
+    public Room(String name, String info) throws Exception {
         super(name, info);
         con = new HashMap<String, Room>();
     }
-    protected Room(JSONObject obj) {
+    protected Room(JSONObject obj) throws Exception {
         super(obj);
         con = new HashMap<String, Room>();
     }

@@ -1,6 +1,8 @@
 ;first line: ignore words (use an empty line for no ignored words)
-to,from,at,in,with,inside,the,a,an,to,on
-;word->word translations
+to,from,at,in,with,inside,the,a,an,to,on,through,cooking
+;a,b  : a->b translation
+;a,b,c  : a b -> c translation
+bottle,oil
 r,restart
 o,open
 television,tv
@@ -15,6 +17,9 @@ x,examine
 window,outside
 l,look
 q,quit
+exit,quit
+ex,quit
+bye,quit
 i,inventory
 inv,inventory
 insert,put
@@ -29,7 +34,12 @@ d,down
 u,up
 upstairs,up			
 upstair,up 
-; word word -> word translations
+close,game,quit
+leave,game,quit
+close,program,quit
+close,application,quit
+leave, program,quit
+leave,application,quit
 up,stair,up
 up,stairs,up
 down,stair,down
@@ -47,3 +57,15 @@ tv,set,tv
 tv,tube,tv
 kitchen,sink,sink
 remote,control,remote
+counter,top,countertop
+benchtop,countertop
+worktop,countertop
+kitchen,bench,countertop
+boy,baby
+baby,boy,baby
+look,close,examine
+look,closer,examine
+look,carefully,examine
+look,detail,examine
+marry,mary
+y,yes

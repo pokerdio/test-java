@@ -6,7 +6,8 @@ import java.util.stream.Collectors;
 
 import org.json.simple.*;
 import org.json.simple.parser.*;
-
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 public class Thing {
     protected String name;
@@ -61,19 +62,50 @@ public class Thing {
         System.out.println(o);
     }
 
+    //returns -1 if badly formed parentheses; otherwise, the deepest nested parens depth
+    public int NestedLevel(String s, char open_paren, char close_paren) {
+        int open = 0;
+        int ret = 0;
+        for (int i=0 ; i<s.length() ; ++i) {
+            if (s.charAt(i) == open_paren) {
+                open += 1;
+                if (open > ret) {
+                    ret = open;
+                }
+            } else if (s.charAt(i) == close_paren) {
+                open -= 1;
+                if (open < 0) {
+                    return -1;
+                }
+            }
+        }
+        return ret;
+    }
 
     public String GetInfo() {
         String i = this.info;
-        for (String s : traits) {
-            i = i.replaceAll("<"+s+":([^>]*)>", "$1");
-            i = i.replaceAll("<!"+s+"[^>]*>", "");
+        String pat_str = "<([^:>]*):([^>]*)>";
+        Pattern pat = Pattern.compile(pat_str);
+        while (true) {
+            Matcher mat = pat.matcher(i);
+            if (mat.find()) {
+                if (HasTrait(mat.group(1))) {
+                    i = i.replace(mat.group(0), mat.group(2));
+                } else {
+                    i = i.replace(mat.group(0), "");
+                }
+            } else {
+                break;
+            }
         }
-        i = i.replaceAll("<![^:]*:([^>]*)>", "$1");
-        i = i.replaceAll("<[^>]*>", "");
         return "    " + i;
     }
 
     public String ItemsInfo(String prefix, String postfix) {
+        return ItemsInfo(prefix, postfix, "listable");
+    }
+
+    public String ItemsInfo(String prefix, String postfix, String traits) {
         if (contents.isEmpty()) {
             return "";
         }
@@ -82,7 +114,7 @@ public class Thing {
 
         int count = 0;
         for (Thing t : contents) {
-            if (t.HasTrait("listable")) {
+            if (t.HasTrait(traits)) {
                 count += 1;
             }
         }
@@ -92,7 +124,7 @@ public class Thing {
 
         String and = "";
         for (Thing t : contents) {
-            if (t.HasTrait("listable")) {
+            if (t.HasTrait(traits)) {
                 if (count == 1) {
                     return prefix + t.GetName(INDEF_ART) + postfix; 
                 } else {
@@ -134,6 +166,15 @@ public class Thing {
             }
         }
         return false;
+    }
+
+    public String HasTraitRegex(String regex_expression) {
+        for (String s : traits) {
+            if (s.matches(regex_expression)) {
+                return s;
+            }
+        }
+        return null;
     }
 
     private static void TestHasTrait_RunTest(Thing t, String s, boolean desired_result)  throws Exception {
@@ -185,9 +226,16 @@ public class Thing {
         return 0;
     }
 
+
     public void DelTrait(String trait) {
         if (HasTrait(trait)) {
             traits.remove(trait);
+        }
+    }
+
+    public void DelTraitRegex(String trait_regex) {
+        while (null != HasTraitRegex(trait_regex)) {
+            traits.remove(HasTraitRegex(trait_regex));
         }
     }
 
@@ -207,7 +255,23 @@ public class Thing {
         }
         return s +  "|" + info + "|" + traits.toString() + "\n";
     }
+
+    public Thing HasRegex(String s, String trait_regex){
+        if (null == s) {
+            s = "";
+        }
+        for (Thing t : contents) {
+            if (("".equals(s) || t.name.equals(s) || t.generic_name.equals(s)) && 
+                (null != t.HasTraitRegex(trait_regex))) {
+                return t;
+            }
+        }
+        return null;
+    }
     public Thing Has(String s, String trait) {
+        if (null == s) {
+            s = "";
+        }
         for (Thing t : contents) {
             if (("".equals(s) || t.name.equals(s) || t.generic_name.equals(s)) && 
                 t.HasTrait(trait)) {
@@ -224,14 +288,21 @@ public class Thing {
         }
         return null;
     }
-    public Thing RemoveFromContents(String name) {
-        Thing t = Has(name);
-        if (t != null) {
-            int idx = contents.indexOf(t);
+    public Thing RemoveFromContents(Thing t) {
+        if (t == null) {
+            return null;
+        }
+        int idx = contents.indexOf(t);
+        if (idx < 0) {
+            return null;
+        } else {
             contents.remove(idx);
             return t;
         }
-        return null;
+    }
+    public Thing RemoveFromContents(String name) {
+        Thing t = Has(name);
+        return RemoveFromContents(t);
     }
 
     public void AddToContents(Thing t) {
@@ -267,7 +338,7 @@ public class Thing {
 
     // protected because it doesn't completely initialize all the properties
     // this only gets called from the world loading function in a subclass
-    protected Thing(JSONObject thing) {
+    protected Thing(JSONObject thing) throws Exception {
         name = (String)(thing.get("name"));
         if (thing.containsKey("generic_name")) {
             generic_name = (String)(thing.get("generic_name"));
@@ -275,6 +346,11 @@ public class Thing {
             generic_name = name;
         }
         info = (String)(thing.get("info"));
+        int nested_level = NestedLevel(info, '<', '>');
+        if (nested_level < 0 || nested_level > 1) {
+            throw new Exception("bad <> format in room " + name + ": " + info);
+        }
+        
         contents_prefix = "Inside you see ";
         if (thing.containsKey("contents_prefix")) {
             contents_prefix = (String)(thing.get("contents_prefix"));
@@ -319,13 +395,22 @@ public class Thing {
             }
         }
     }
-    public Thing (String name, String info) {
+
+    public Thing (String name, String info) throws Exception {
+        int nested_level = NestedLevel(info, '<', '>');
+        if (nested_level < 0 || nested_level > 1) {
+            throw new Exception("bad <> format in room " + name + ": " + info);
+        }
+
+
         this.indefinite_article = "a ";
         this.definite_article = "the ";
         this.contents_prefix = "Inside you see ";
         this.name = name;
         this.generic_name = name;
         this.info = info;
+        
+        
         this.contents = new ArrayList<Thing>();
         this.traits = new HashSet<String>();
         this.contents_by_name = new ArrayList<String>();
@@ -339,8 +424,6 @@ public class Thing {
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
     }
     
-
-
     //returns a "key.key name" trait if present - doors & other unlockables
     //to identify the key that can unlock it
     public String KeyTrait() { 

@@ -20,6 +20,11 @@ public class Command {
     public List<String> com;
     public List<String> matchData;
 
+
+    public boolean equals(Command c2) {
+        return com.equals(c2.com);
+    }
+
     public static void LoadConfig(String file_name) throws IOException {
         File f = new File(file_name);
         FileReader fr = new FileReader(f);
@@ -112,7 +117,8 @@ public class Command {
 
         String previous = null; 
         new_word:
-        for (String c : s.split("\\W+")) {
+//        for (String c : s.split("\\W+")) {
+        for (String c : s.split(" ")) {
             c = c.toLowerCase();
             if (translate.get(c) != null) {
                 c = translate.get(c);

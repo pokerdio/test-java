@@ -15,11 +15,40 @@ public class Game {
         System.out.println(s);
     }
 
+    public static String AdvancePathWalkBack(String path, char forward_chr, char backward_chr) {
+        if (backward_chr == path.charAt(path.length() - 1)) {
+            path = path.substring(0, path.length() - 1);
+        } else {
+            path = path + forward_chr;
+        }
+        return path;
+    }        
+    public static String AdvancePath(String path, String dir) {
+        switch(dir) {
+        case "north":
+            path = AdvancePathWalkBack(path, 'n','s');
+            break;
+        case "south":
+            path = AdvancePathWalkBack(path, 's','n');
+            break;
+        case "west":
+            path = AdvancePathWalkBack(path, 'w','e');
+            break;
+        case "east":
+            path = AdvancePathWalkBack(path, 'e','w');
+            break;
+        }
+        return path;
+    }
+
     public static void main(String[] args) throws Exception {
         BufferedReader in = new BufferedReader (new InputStreamReader(System.in));
-
+        
+        boolean quit_yes_no = false; 
         Game game = new Game(); 
-        Command com;
+        Command old = new Command("");
+        Command com = old;
+
         Command.LoadConfig("command.txt");
         Thing.TestHasTrait();
     main_loop:
@@ -43,8 +72,36 @@ public class Game {
             // p("============end test==============");
         game_loop:
             do {
+                if (r.HasTrait("wood_path.nnwsennnee")) {
+                    Thing t = r.Has("treasure");
+                    if (null != t) {
+                        t.AddTrait("listable");
+                        t.AddTrait("pickable");
+                    } 
+                } else {
+                    Thing t = r.Has("treasure");
+                    if (null != t) {                    
+                        t.DelTrait("listable");
+                        t.DelTrait("pickable");
+                    }
+                }
+
                 System.out.print("> ");
+                old = com;
                 com = new Command(in.readLine());
+
+                if (com.Match("yes")) {
+                    if (quit_yes_no) {
+                        p("Bye.");
+                        break;
+                    }
+                    p("What?");
+                    continue;
+                }
+                if (com.Match("no")) {
+                    continue;
+                }
+                quit_yes_no = false;
                 if (com.Match("dbg")) { 
                     p("=========r==========");
                     p(r);
@@ -54,8 +111,92 @@ public class Game {
                     p("=========inv=========");
                     p(pc.contents);
                     p("---------------------");
+                } else if (com.Match("add_trait", "?", "?")) {
+                    String item = com.matchData.get(0);
+                    Thing t; 
+                    if ("room".equals(item)) {
+                        t = r;
+                    } else {
+                        t = pc.Has(item);
+                        if (null == t) {
+                            t = r.Has(item);
+                            if (null == t) {
+                                p("don't have it");
+                                continue game_loop;
+                            }
+                        }
+                    }
+                    String trait = com.matchData.get(1);
+                    t.AddTrait(trait);
+                    continue game_loop;
+                } else if (com.Match("del_trait", "?", "?")) {
+                    String item = com.matchData.get(0);
+                    
+                    Thing t; 
+                    if ("room".equals(item)) {
+                        t = r;
+                    } else {
+                        t = pc.Has(item);
+                        if (null == t) {
+                            t = r.Has(item);
+                            if (null == t) {
+                                p("don't have it");
+                                continue game_loop;
+                            }
+                        }
+                    }
+                    String trait = com.matchData.get(1);
+                    t.DelTrait(trait);
+                    continue game_loop;
                 } else if (com.Match("restart")) {
                     continue main_loop;
+                } else if (com.Match("enter", "?")) {
+                    Thing t = r.Has(com.matchData.get(0));
+                    if (null == t || !t.HasTrait("enter")) {
+                        p("You can't.");
+                        continue game_loop; 
+                    }
+                    if (r.con.containsKey("enter")) {
+                        r = r.con.get("enter");
+                        p("You enter " + t.GetName(Thing.DEF_ART) + 
+                          " stepping into " + r.GetName(Thing.DEF_ART) + ".");
+                    } else {
+                        p("You can't.");
+                    }
+                    continue game_loop;
+                } else if (com.Match("say", "bloody", "mary", "*")) {
+                    if (r.HasTrait("dark")) {
+                        Thing t = r.Has("", "portal");
+
+                        if (t.HasTrait("bloody3")) {
+                            p("You'd rather not do that again.");
+                            continue;
+                        } else {    
+                            p("You say: Bloody Mary!");
+                        }
+                        if (null == t) {
+                            p("Nothing seems to happen.");
+                        } else {
+                            if(t.HasTrait("bloody1")) {
+                                p("For a second a slight air current seems to flow by, but maybe you're imagining it.");
+                                t.ReplaceTrait("bloody1", "bloody2");
+                            } else if(t.HasTrait("bloody2")) {
+                                p("A palpable, electric tension fills the room. A darkly red shape not unlike a human form comes forth and vanishes back through the now slighlty luminiscent rectangle of the mirror.");
+                                t.ReplaceTrait("bloody2", "bloody3");
+                                t.AddTrait("enter");
+                                t.AddTrait("lit");
+                            } else {
+                                p("As silly as it sounds, you feel stared at from the dark.");
+                                t.AddTrait("bloody1");
+                            }
+                        }
+                    } else {
+                        p("It's supposed to be said when it is dark.");
+                    }
+                    continue;
+                }  else if (com.Match("say", "*")) {
+                    p("You consider talking to yourself and decide against it.");
+                    continue game_loop;
                 } else if (com.Match("wait")) {
                     int state = pc.AdvanceTraitState("wait_trait", 10);
                     switch(state) {
@@ -83,7 +224,7 @@ public class Game {
                         break;
                     }
                     continue game_loop;
-                } else if (com.Match("give", "apple", "baby")) {
+                } else if (com.Match("give", "apple", "baby") || com.Match("give", "baby", "apple")) {
                     Thing baby = r.Has("baby");
                     Thing apple = pc.Has("apple");
                     if (baby == null) {
@@ -106,9 +247,14 @@ public class Game {
                         p("The baby looks unhappily at the apple and pushes it away.");
                     }
                 } else if (com.Match("open", "?")) {
+                    Thing monster = r.Has("", "inhibit_open");
+                    if (null != monster) {
+                        p("You can't because of " + monster.GetName(Thing.DEF_ART) + ".");
+                        continue;
+                    }
                     String item_name = com.matchData.get(0);
                     Thing t = r.Has(item_name);
-
+                    
                     if (t == null) {
                         p("Open what?");
                         continue;
@@ -147,19 +293,19 @@ public class Game {
                     }
                 } else if (com.Match("look|examine") || 
                            com.Match("look|examine", "room|around|here")) { 
-                    if("examine".equals(com.com.get(0))) {
+                    if("examine".equals(com.com.get(0)) || com.equals(old)) {
                         r.AddTrait("examine");
                     }
                     p(r.GetInfo());
                     p("");
-                    p(r.ConnectionInfo());
-
-                    if(!r.HasTrait("dark")) {
-                        String itemInfo = r.ItemsInfo("There is ", " here.");
-                        if (!itemInfo.equals("")) {
-                            p("");
-                            p(itemInfo);
-                        }
+                    if (!"".equals(r.ConnectionInfo())) {
+                        p(r.ConnectionInfo());
+                    }
+                    String visible_trait = r.HasTrait("dark") ? "listable&lit":"listable";
+                    String itemInfo = r.ItemsInfo("There is ", " here.", visible_trait);
+                    if (!"".equals(itemInfo)) {
+                        p("");
+                        p(itemInfo);
                     }
                     r.DelTrait("examine");
                 } else if (com.Match("look", "outside")) {
@@ -169,11 +315,6 @@ public class Game {
                         break;
                     }
                 } else if (com.Match("look|examine", "?")) {
-                    if(r.HasTrait("dark")) {
-                        p("It is too dark to see anything.");
-                        continue;
-                    }
-
                     String item_name = com.matchData.get(0);
                     // p("trying to find " + item_name + " in:");
                     // p("=====================================");                
@@ -182,8 +323,13 @@ public class Game {
                     // pc.contents.forEach(x -> p(x));
                     // p("=====================================");
                     Thing t = r.Has(item_name);
+
+                    if(r.HasTrait("dark") && (t == null || !t.HasTrait("lit"))) {
+                        p("It is too dark to see anything.");
+                        continue;
+                    }
                     if (t != null) {
-                        if ("examine".equals(com.com.get(0))) {
+                        if ("examine".equals(com.com.get(0)) || com.equals(old)) {
                             t.AddTrait("examine");
                         }
                         p(t.GetInfo());
@@ -197,7 +343,11 @@ public class Game {
                     } else {
                         t = pc.Has(item_name);
                         if (t != null) {
+                            if ("examine".equals(com.com.get(0)) || com.equals(old)) {
+                                t.AddTrait("examine");
+                            }
                             p(t.GetInfo());
+                            t.DelTrait("examine");
                         } else {
                             p("There's nothing interesting about that.");
                         }
@@ -259,28 +409,68 @@ public class Game {
                     } else {
                         p("You can't take that.");
                     }
-                } else if (com.Match("drop", "?")) {
+                } else if (com.Match("drop", "?") || com.Match("put", "?", "down|ground|floor")) {
                     String item_name = com.matchData.get(0);
                     Thing t = pc.RemoveFromContents(item_name);
                     if (t != null) {
+                        if (t.HasTrait("precious")) {
+                            p("You decide against it. " +
+                              Thing.Capitalize(t.GetName(Thing.DEF_ART)) + 
+                              " is precious to you.");
+                            continue game_loop;
+                        }
                         p("You drop " + t.GetName(Thing.DEF_ART) + ".");
                         r.AddToContents(t);
+
+                        if(t.HasTrait("milk")) {
+                            Thing panther = r.Has("panther");
+                            if (null != panther) {
+                                p("The panther drinks from " + t.GetName(Thing.DEF_ART) +
+                                  ", then moves into a corner and coils itself to take a nap.");
+                                panther.ReplaceTrait("inhibit_open", "asleep");
+                            }
+                        }
                     } else {
-                        p("You don't have " + t.GetName(Thing.INDEF_ART) + ".");
+                        p("You don't have that.");
                     }
                 } else if (com.Match("count", "*")) {
                     p("You used " + Integer.toString(com.matchData.size()) + " words.");
-                } else if (com.Match("go", "?") || com.Match("up|down|west|east|north|south")) {
+                } else if (com.Match("go", "up|down|west|east|north|south") || 
+                           com.Match("up|down|west|east|north|south")) {
                     String desto;
                     if ("go".equals(com.com.get(0))) {
-                        desto = com.matchData.get(0);
+                        desto = com.com.get(1);
                     } else {
                         desto = com.com.get(0);
                     }
+
+                    if ("south".equals(desto) && r.HasTrait("south_quit")) {
+                        if (null != pc.Has("treasure")) {
+                            p("You step outside the game world, with the treasure! Congratulations! You win!");
+                            break;
+                        } else {
+                            p("Are you sure? (yes/no)");
+                            quit_yes_no = true;
+                        }
+                        continue;
+                    }
+
+                    if ((new Command(desto)).Match("west|east|north|south") && 
+                        null != r.HasTraitRegex("wood_path\\..*")) {
+                        String path = r.HasTraitRegex("wood_path\\..*");
+                        r.ReplaceTrait(path, AdvancePath(path, desto));
+                        p("You go " + desto + ".");
+                        continue;
+                    }
+
                     if (r.con.containsKey(desto)) {
                         for (Thing t : r.contents) {
                             if(t.HasTrait("locked&block." + r.GetName()+"."+desto)) {
                                 p("You can't. " + Thing.Capitalize(t.GetName(Thing.DEF_ART)) + " is locked.");
+                                continue game_loop;
+                            }
+                            if(t.HasTrait("bridge_up&block." + r.GetName()+"."+desto)) {
+                                p("You can't. " + Thing.Capitalize(t.GetName(Thing.DEF_ART)) + " is raised.");
                                 continue game_loop;
                             }
                         }
@@ -348,6 +538,43 @@ public class Game {
                         continue game_loop;
                     }
                     p("You don't have the right key.");
+                } else if (com.Match("oil", "lever")||com.Match("use", "oil", "lever")) {
+                    Thing lever = r.Has("lever");
+                    if (null == lever) {
+                        p("No lever here.");
+                        continue game_loop;
+                    }
+                    Thing oil = pc.Has("oil");
+                    if (null == oil) {
+                        p("You have no oil");
+                        continue game_loop;
+                    }
+                    if (lever.HasTrait("rusty")) {
+                        p("You lather the lever mechanism generously with the cooking oil.");
+                        lever.DelTrait("rusty");
+                        pc.RemoveFromContents(oil);
+                        continue game_loop;
+                    } else {
+                        p("OK.");
+                    }
+                } else if (com.Match("use|pull|press|depress|push|flip|move|activate", "lever")) {
+                    Thing lever = r.Has("lever");
+                    if (null == lever) {
+                        p("No lever here.");
+                        continue game_loop;
+                    } 
+                    if (lever.HasTrait("rusty")) {
+                        p("It won't budge.");
+                        continue game_loop;
+                    }
+                    Thing drawbridge = r.Has("drawbridge");
+                    if(null == drawbridge || drawbridge.HasTrait("bridge_down")) {
+                        p("You push the lever, but nothing happens.");
+                        continue game_loop;
+                    }
+
+                    p("You push the lever. With surprisingly little sound the drawbridge lowers itself into place, fitting seamlessly into the gap. ");
+                    drawbridge.ReplaceTrait("bridge_up", "bridge_down");
                 } else if (com.Match("use", "batteries", "remote") ||
                            com.Match("put", "batteries", "remote") || 
                            com.Match("charge", "remote") ||
@@ -436,7 +663,9 @@ public class Game {
 
                     Thing drink = pc.Has(drink_name);
                     if (drink == null) {
-                        drink = r.Has(drink_name);
+                        if ("milk".equals(drink_name) || "water".equals(drink_name)) {
+                            drink = r.Has("", drink_name);
+                        }
                     }
                     if (null != drink) {
                         if (drink.HasTrait("water")) {
@@ -510,9 +739,10 @@ public class Game {
                         continue;
                     }
                     p("Nothing seems suitable for disposing of unwanted liquid here.");
-                } else if (com.Match("quit")) {
-                    p("Bye!");
-                    break;
+                } else if (com.Match("quit", "*")) {
+                    p("Are you sure? (yes/no)");
+                    quit_yes_no = true;
+                    continue;
                 } else if (com.Match("power", "light|switch")) {
                     if (!r.HasTrait("light switch")) {
                         p("You see no light switch here.");
@@ -539,13 +769,25 @@ public class Game {
                     } else {
                         p("You can't do that.");
                     }
-                } else if (com.Match("flick|flip", "light|switch")) {
+                } else if (com.Match("flick|flip|press|push", "light|switch")) {
                     if (!r.HasTrait("light switch")) {
                         p("You see no light switch here.");
                         continue;
                     }
                     if (r.HasTrait("dark")) {
                         p("You turn on the light.");
+                        if (null != r.Has("", "portal") && 
+                            (null != r.Has("", "portal").HasTraitRegex("bloody.*"))) {
+                            p("A certain tension vanishes from the room.");
+                            if (null != r.HasRegex("", "bloody.*")) {
+                                r.HasRegex("", "bloody.*").DelTraitRegex("bloody.*");
+                            }
+                            Thing mirror = r.Has("mirror");
+                            if (null != mirror) {
+                                mirror.DelTrait("lit");
+                                mirror.DelTrait("enter");
+                            }
+                        }
                         r.ReplaceTrait("dark", "lit");
                     }  else if (r.HasTrait("lit")) {
                         p("You turn off the light.");
@@ -560,7 +802,7 @@ public class Game {
                         continue;
                     }
                     Thing sink = r.Has("sink");
-                    if (null == sink) {
+                    if (null == sink || r.HasTrait("dark")) {
                         p("You don't see anything to wash the apple with.");
                         continue;
                     }

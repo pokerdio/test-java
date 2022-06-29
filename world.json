@@ -1,27 +1,37 @@
 {"map":[
     {"name":"kitchen",
      "info":"This is a well furnished kitchen. ", 
-     "items":["refrigerator", "cupboard", "table", "sink", "drawer"],
+     "items":["refrigerator", "countertop", "sink", "drawer", "cabinet"],
      "traits":[],
      "links":{"south":"hallway"}},
+
     {"name":"hallway",
-     "info":"The hallway is an unadorned high room, with openings to other rooms and stairs going up and down. ",
+     "info":"The hallway is an unadorned high room, with openings to other rooms and stairs going up and down. To the south, a mahogany solid door leads out of the house and of the game.",
      "links":{"north":"kitchen", "east":"living room", "west":"bathroom", "down":"basement", "up":"attic"},
-     "traits":[],
+     "traits":["south_quit"],
      "items":["player", "bathroom door"]},
+
     {"name":"attic",
      "info":"A large empty room, with a small window.",
-     "items":["stars"],
+     "items":["stars", "wardrobe"],
      "links":{"down":"hallway"}}
+
     {"name":"basement",
      "info":"A small, dark room, with stagnant moldy air, brick walls, earthen floor and a low wooden beams ceiling.",
      "items":["stars", "castle door"],
      "links":{"up":"hallway", "east":"bridge"}},
+
 	{"name":"bridge",
 	 "display name":"castle bridge",
-     "info":"A high stone bridge connecting a tall redoubt to the west to the main walls of what looks to be a large medieval fortification to the east. The pastoral view to the north and south is charming.",
-     "items":["horizon", "castle door"],
-	 "links":{"west":"basement"}},
+     "info":"A high stone bridge connecting a tall redoubt to the west to the main walls of what looks to be a large medieval fortification to the east. The pastoral view to the north and south is charming. ",
+     "items":["horizon", "castle door", "lever", "drawbridge"],
+	 "links":{"west":"basement", "east":"castle lobby"}},
+
+	{"name":"castle lobby",
+	 "info":"A richly decorated room that has however long since fallen into disrepair and ruin. Collapsed walls and rubble block further access in the structure. ",
+	 "items":["panther", "chest"],
+	 "links":{"west":"bridge"}}
+	
     {"name":"living room",
      "info":"A large room well lit room, with wide windows opening to a scenic horizon. ",
      "items":["horizon", "sofa", "tv", "baby"],
@@ -29,28 +39,64 @@
 
 	{"name":"bathroom",
 	 "info":"<dark:This is a small dark room. You can barely make out a light switch near the entrance.><lit:This is a small neat bathroom with white tiles on the walls and floor, a sink and a lavatory.>",
-	 "links":{"east":"hallway"},
-	 "items":["sink", "plunger", "towel", "bathroom door"],
-	 "traits":["dark", "light switch", "lavatory"]}
+	 "links":{"east":"hallway", "enter":"forest"},
+	 "items":["sink", "plunger", "towel", "bathroom door", "mirror"],
+	 "traits":["dark", "light switch", "lavatory"]},
+
+	{"name":"forest",
+     "info":"A large pine forest covered in a thick fog. <examine:You can hardly see your hands if you lift them in front of your face.> <wood_path.:There is a large mahogany door, improbably standing without support from any frame or building.>",
+     "links":{"enter":"hallway"},
+	 "items":["treasure", "forest door"],
+	 "traits":["wood_path."]}
 ],
+
  "items":[
+	 {"name":"treasure",
+	  "indefinite_article":"",
+	  "info":"...lots and lots of shiny...",
+	  "traits":["precious"]}
+	 {"name":"panther",
+      "info":"You see a large, black cat. A very large cat, with long, stabby claws and frightening teeth. <!asleep:It eyes you indifferently.><asleep:It sleeps, snoring lightly.>",
+	  "traits":["inhibit_open", "listable"]},
+
 	 {"name":"baby",
-      "info":"A small baby. <has_key:It is playing with a large iron key. ><watch_tv:It is watching the telly. ><has_apple:It is taking bites out of a shiny green apple.>",
+      "info":"A <examine:blonde> baby boy<examine: in a mariner suit>. <has_key:It is playing with a large iron key. ><watch_tv:It is watching the telly. ><has_apple:It is taking bites out of ><has_apple&examine: a shiny green apple><has_apple&!examine:an apple>.",
 	  "contents_prefix":"The baby has ",
       "traits":["has_key", "listable", "contents_visible"],
 	  "items":["castle key"]},
+
+	 {"name":"lever",
+      "info":"An iron lever with a worned out wooden handle.<examine: You try to move it a bit but it won't budge.>"
+      "traits":["rusty", "listable"]},
+
+	 {"name":"drawbridge",
+	  "info":"The drawbridge is <bridge_up:up><bridge_down:down>.",
+	  "traits":["bridge_up", "block.bridge.east"]
+	 },
+
+	 {"name":"mirror",
+      "info":"A large <examine:person high >rectangle mirror<examine:, extending all the way to the floor>. <lit:Through the mirror you distinguish a milky, dimly luminiscent fog like billowing, at times revealing branches. You could almost swear a faint scent of pine tree is emanating from the mirror.>"
+      "traits":["portal", "listable"]},
+
+	 {"display_name": "door",
+	  "generic_name":"door",
+	  "name":"forest door",
+      "info":"You see a large mahogany door, improbably hanging in thin air with no frame around it.",
+      "traits":["enter"]},
+
 	 {"display_name": "door",
 	  "generic_name":"door",
 	  "name":"bathroom door",
-      "info":"A white plywood door with a round brass handle.",
-      "traits":["unlocked", "block.bathroom.east", "block.hallway.west", "key.bathroom key"]},
+      "info":"A <examine:laminated white >plywood door<examine: with a round glass handle>.",
+      "traits":["locked", "block.bathroom.east", "block.hallway.west", "key.bathroom key"]},
+
 	 {"display_name": "door",
 	  "generic_name":"door",
 	  "name":"castle door",
-      "info":"A heavy door, made out of thick planks connected by crude but sturdy iron works.<examine: The wood is very dark as if it had been blackened by candle smoke over decades. Three wide horizontal iron bands marked by round rivet heads span the door width. There is a large key hole and a handle.>",
+      "info":"A heavy door, made out of thick planks connected by crude but sturdy iron works.<examine: The wood is dark as if it had been blackened by candle smoke over decades. Three wide horizontal iron bands marked by round rivet heads span the door width. There is a large key hole and a handle.>",
       "traits":["locked", "block.basement.east", "block.bridge.west", "key.castle key"]}
 	 {"name":"tv",
-      "info":"A wide screen TV is fixed on the wall to the kitchen. <off:It is turned off.><on:It is on. Cartoons are on.>",
+      "info":"A wide screen TV is fixed on the western wall. <off:It is turned off.><on:It is on. Cartoons are on.>",
       "traits":["listable", "off"]},
 
 	 {"name":"sofa",
@@ -81,33 +127,53 @@
       "info":"A small pile of batteries.",
 	  "traits":["listable", "pickable"]},
 	 {"name":"bowl",
-      "info":"A small white ceramic bowl<milk: filled with milk><water: filled with water>.",
+      "info":"A small <examine:dented >white ceramic bowl<milk: filled with milk><water: filled with water>.",
 	  "traits":["listable", "pickable"]},
 	 {"name":"milk",
 	  "display_name": "jug of milk"
       "info":"A large jug of milk.",
 	  "traits":["listable"]},
-
+	 {"name":"oil",
+	  "display_name":"bottle of cooking oil",
+      "info":"A <examine:half filled >bottle of cooking oil.",
+	  "traits":["listable", "pickable"]},
 	 {"name":"apple",
 	  "indefinite_article": "an",
       "info":"A large <clean:flawless sparkingly clean><!clean:somewhat grimy> green apple.",
 	  "traits":["listable", "pickable", "edible"]},
 	 {"name":"drawer",
-	  "info":"A drawer at the top side of the cupboard. 
-<open:It is open.><closed:It is closed.>",
+	  "info":"A drawer just under the countertop. <open:It is open.><closed:It is closed.>",
 	  "items":["bathroom key"],
 	  "traits":["closed"]}
-     {"name":"cupboard",
-      "info":"This is an ordinary kitchen cupboard, with a drawer 
-and a door. <closed:The cupboard is closed.><open:The cupboard is open.>",
-	  "items":["batteries", "bowl"],
+
+     {"name":"wardrobe",
+      "info":"An old fashioned wooden wardrobe, with two lacquered brown doors. <closed:It is closed. ><open:It is open. There is nothing inside. ><examine&open:You make out a somewhat faded penciled scrawling in small writing on the back panel. It reads: say 'Bloody Mary' three times in front of a mirror, in the dark, and something may happen...>",
+	  "items":[],
       "traits":["listable", "closed"]},
-     {"name":"table",
-      "info":"The table is as long as the room, affixed against the western wall, with a kitchen sink installed.",
+
+     {"name":"chest",
+      "info":"A small ornate wooden chest, bound by black metal iron works.<closed:It is closed.><open:It is open.>",
+	  "items":["map"],
+      "traits":["listable", "closed"]},
+
+     {"name":"map",
+      "info":"A small map on stained aged paper.<examine: To get to the X sign a path goes north then again north then west, south, east, north, north, north, east and again east. Arrows point a path back to to the origin in the exact reverse order. Ornate hand writing in faded red ink reads: 'Obey the path truly and be rich beyond all measure, stray but one step and ye shalt be lost forever.'>",
+      "traits":["listable", "pickable"]},
+
+
+     {"name":"cabinet",
+      "info":"Under the countertop there is a<examine: white plastic laminate> cabinet. <closed:It is closed.><open:It is open.>",
+	  "items":["batteries", "bowl"],
+      "traits":["closed"]},
+
+     {"generic_name":"table",
+	  "name":"countertop",
+      "info":"The <examine:imitation granite >counter top is affixed against the western wall, integrated with a sink, a drawer and a cabinet.",
       "traits":["listable"]},
+
      {"name":"refrigerator",
       "info":"The refrigerator is large and modern looking.<open: The door is open and the light inside is on.>",
-	  "items":["milk", "apple"],
+	  "items":["milk", "apple", "oil"],
       "traits":["listable", "closed"]},
      {"name":"sink",
       "info":"The sink has faucets for cold and hot water.",
