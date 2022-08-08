@@ -268,5 +268,6 @@ it was the fuck fuck")
 (match-com (look x)
   (p "Nothing interesting about a " x "."))
 
+
 (trail house-s e house-se n house-e n house-ne w house-n w house-nw
 	   s house-w s house-sw e house-s n house)
