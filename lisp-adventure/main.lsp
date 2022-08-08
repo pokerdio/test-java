@@ -48,7 +48,7 @@
 
 (defun find-connection (dir room)
   (loop for (d r1 r2) in *go*
-		;do (print (cat d r1 r2))
+                                        ;do (print (cat d r1 r2))
 		when (and (eq d dir) (eq r1 room))
 		  return r2))
 
@@ -222,14 +222,14 @@ it was the fuck fuck")
 		(body (append body '((setf *command-handled* t)))))
 	`(setf *f*
 		   (append *f*
-			(list #'(lambda (,com-sym)
-				 ,(build-match-lambda-body com-sym pat body)))))))
+			       (list #'(lambda (,com-sym)
+				             ,(build-match-lambda-body com-sym pat body)))))))
 
 
 (defmacro match-coms (pats &body body)
   `(progn
 	 ,@(loop for pat in pats
-		   collect `(match-com ,pat ,@body))))
+		     collect `(match-com ,pat ,@body))))
 
 (defun process-commands (com)
   (let ((*command-handled* nil))
@@ -244,7 +244,7 @@ it was the fuck fuck")
 	(process-commands com)
 	(terpri)))
 
-;------------------------------
+                                        ;------------------------------
 
 (match-com (look)
   (p (current-room-desc)))
