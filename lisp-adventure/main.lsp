@@ -7,10 +7,8 @@
   '("" "the" "an" "a"))
 
 (defparameter *translate*
-  '((n . north)
-    (s . south)
-    (e . east)
-    (w . west)
+  '((n . north) (s . south) (e . east) (w . west)
+    (u . up) (d . down)
     (q . quit)
     (l . look)
     (x . look)
@@ -18,33 +16,128 @@
     (see . look)
     (q . quit)))
 
-
-(defparameter *desc*
-  '((house-ne . "You're in the garden of a small house.")
-    (house-s . "You're in the garden of a small house. The front door of the house lies to the north. ")
-    (house-e . "You're in the garden of a small house.")
-    (house-n . "You're in the garden of a small house.")
-    (house-w . "You're in the garden of a small house.")
-    (house-se . "You're in the garden of a small house.")
-    (house-sw . "You're in the garden of a small house.")
-    (house-nw . "You're in the garden of a small house.")
-    (house . "You're inside a house. On the inside it looks larger than you had expected. The floor is covered by a thick rug.")))
-
 (defparameter *go* '())
 
 (defparameter *command-handled* nil)
+
+(defparameter *things* nil)
+
+
+(defclass thing ()
+  ((name :initarg :name
+         :initform (error "thing must has name")
+         :accessor thing-name)
+   (desc :initarg :description
+         :initform nil)
+   (traits :initarg :traits
+           :initform nil
+           :accessor thing-traits)
+   (has :initarg :contents
+        :initform nil
+        :accessor thing-has)))
+
+
+(defun get-thing (thing-sym)
+  (cdr (assoc thing-sym *things*)))
+
+(defun has-trait (thing-sym trait)
+  (let ((thing (get-thing thing-sym)))
+    (not (not (member trait (thing-traits thing))))))
+
+(defun add-trait (thing-sym trait)
+  (let ((thing (get-thing thing-sym)))
+    (with-accessors ((traits thing-traits)) thing
+      (when (not (member trait traits))
+        (setf traits (cons trait traits))))))
+
+(defun del-from-down-lst (lst sym)
+  "destructively deletes an item from a list except from the first element"
+  (when (cdr lst)
+    (if (eq sym (cadr lst))
+        (setf (cdr lst) (cddr lst))
+        (del-from-down-lst (cdr lst) sym))))
+
+(defun del-trait (thing-sym trait)
+  (let ((thing (get-thing thing-sym)))
+    (with-accessors ((traits thing-traits)) thing
+      (when (has-trait trait thing)
+        (if (eq (car traits) trait)
+            (setf traits (cdr traits))
+            (del-from-down-lst traits trait))))))
+
+(defmethod thing-desc ((x thing))
+  (with-slots (name desc)
+      x
+    (if desc desc
+        (format nil "This is a ~A." (sym-to-low-str name)))))
+
+(defmethod print-object ((x thing) out)
+  (format out "thing:~A" (thing-name x)))
+
+(defmethod detail-thing ((x thing))
+  (format t "thing(~A|~A|~A)"
+          (thing-name x)
+          (thing-traits x)
+          (thing-desc x)))
+
+;; (remove-method #'detail-object
+;;                (find-method #'detail-object '() (list (find-class 'thing) t)))
+
+(defmacro returning (varname init-form &body body)
+  `(let ((,varname ,init-form))
+     (progn 
+       ,@body
+       ,varname)))
+
+(defmacro iflet (varname condition-form &body body)
+  `(let ((,varname ,condition-form))
+     (if ,varname ,@body)))
+
+
+(defun add-thing (thing)
+  (let ((sym (thing-name thing)))
+    (iflet it (assoc sym *things*)
+      (setf (cdr it) thing)
+      (setf *things* (cons (cons (thing-name thing) thing)
+                           *things*)))))
+
+(defun make-thing (sym traits desc &optional (contents nil))
+  (returning ret (make-instance 'thing
+                                :name sym
+                                :traits traits
+                                :description desc
+                                :contents contents)
+    (add-thing ret)))
+
+
+
+(make-thing 'house-ne '(room) "You're in the garden of a small house.")
+(make-thing 'house-s '(room) "You're in the garden of a small house. ~
+The front door of the house lies to the north. ")
+(make-thing 'house-e '(room) "You're in the garden of a small house.")
+(make-thing 'house-n '(room) "You're in the garden of a small house.")
+(make-thing 'house-w '(room) "You're in the garden of a small house.")
+(make-thing 'house-se '(room) "You're in the garden of a small house.")
+(make-thing 'house-sw '(room) "You're in the garden of a small house.")
+(make-thing 'house-nw '(room) "You're in the garden of a small house.")
+(make-thing 'house '(room) "You're inside the only room of the house. It looks much larger than you had expected. The floor is covered by a thick rug.")
+
+(make-thing 'cellar '(room) "You're inside a small, dark cellar with brick walls lined by empty shelves. Stairs go upward. ")
 
 (defmacro p (&rest args)
   `(format t (cat ,@args)))
 
 (defun current-room-desc ()
-  (cdr (assoc *r* *desc*)))
+  (thing-desc (cdr (assoc *r* *things*))))
+
 
 (defun reverse-dir (dir)
   (cond ((eq dir 'east) 'west)
         ((eq dir 'south) 'north)
         ((eq dir 'north) 'south)
-        ((eq dir 'west) 'east)))
+        ((eq dir 'west) 'east)
+        ((eq dir 'up) 'down)
+        ((eq dir 'down) 'up)))
 
 (defun find-connection (dir room)
   (loop for (d r1 r2) in *go*
@@ -57,10 +150,14 @@
       (cdr (assoc sym *translate*))
       sym))
 
+(defun connect-1-way (place1 dir place2)
+  (setf dir (trans dir))
+  (setf *go* (cons (list dir place1 place2) *go*)))
+
 (defun connect (place1 dir place2)
   (setf dir (trans dir))
-  (setf *go* (cons (list dir place1 place2)  *go*))
-  (setf *go* (cons (list (reverse-dir dir) place2 place1) *go*)))
+  (connect-1-way place1 dir place2)
+  (connect-1-way place2 (reverse-dir dir) place1))
 
 (defun expand-triplets-by-two (lst)
   (when (cdr lst)
@@ -75,6 +172,11 @@
 (defmacro trail (&rest syms)
   (cons 'progn
         (mapcar #'(lambda (x) (cons 'connect (quote-every x)))
+                (expand-triplets-by-two syms))))
+
+(defmacro trail-1-way (&rest syms)
+  (cons 'progn
+        (mapcar #'(lambda (x) (cons 'connect-1-way (quote-every x)))
                 (expand-triplets-by-two syms))))
 
 
@@ -142,35 +244,6 @@ intended use with sorted lists"
 (defun cat (&rest args)
   (format nil "~{~a~^~}" (mapcar #' sym-to-low-str args)))
 
-(defstruct thing
-  name def-name indef-name
-  sym
-  in-thing)
-
-(defun new-thing (name &key sym def-name indef-name in-thing)
-  (if (not name)
-      (setf name "thing"))
-  (setf name (string-downcase (string name)))
-  (if (not sym)
-      (setf sym (intern (string-upcase name))))
-  (if (not def-name)
-      (setf def-name (cat "the" name)))
-  (if (not indef-name)
-      (setf indef-name (cat "a" name)))
-  (setf *t*
-        (cons (cons sym (make-thing :name name
-                                    :def-name def-name
-                                    :indef-name indef-name
-                                    :in-thing in-thing
-                                    :sym sym))
-              *t*)))
-
-(defun monkey (x)
-  (format t "***~a***" x))
-
-(format nil "it was the fuck fuck ~
-it was the fuck fuck")
-
 (defun build-match-var-wrap (input-sym var body)
   `(when ,input-sym
      (let ((,var (car ,input-sym))
@@ -195,7 +268,7 @@ it was the fuck fuck")
      (let ((,input-sym (cdr ,input-sym)))
        ,@body)))
 
-(defun build-match-in-room-wrap (input-sym room-lst body)
+(defun build-match-in-room-wrap (room-lst body)
   `(when (member *r* ',room-lst)
      ,@body))
 
@@ -209,7 +282,7 @@ it was the fuck fuck")
                       ((and var1 (listp var1) (var? (car var1)))
                        (build-match-var-opt-wrap input-sym var1 rest-body))
                       ((and var1 (listp var1) (eq :in (car var1)))
-                       (build-match-in-room-wrap input-sym (cdr var1) rest-body))
+                       (build-match-in-room-wrap (cdr var1) rest-body))
                       ((and var1 (listp var1))
                        (build-match-var-const-wrap input-sym var1 rest-body))
                       (t (build-match-const-wrap input-sym var1 rest-body)))))
@@ -244,30 +317,42 @@ it was the fuck fuck")
     (process-commands com)
     (terpri)))
 
-                                        ;------------------------------
+            ;------------------------------
+
+(defun go-room (room msg)
+  (p msg)
+  (setf *r* room)
+  (p (current-room-desc)))
 
 (match-com (look)
   (p (current-room-desc)))
 
-(match-coms ((go (x north west east south))
-             ((x north west east south)))
+(match-coms (((:in house) go down)
+             ((:in house) down))
+  (if (has-trait *r* 'trapdoor-revealed)
+      (progn
+        (go-room 'cellar "You climb down the steep stairs. "))
+      (p "You can't go there.")))
+
+(match-coms ((go (x north west east south down up))
+             ((x north west east south down up)))
   (let ((new-room (find-connection x *r*)))
     (if new-room
         (progn
-          (setf *r* new-room)
-          (p "You go " x ".~%")
-          (p (current-room-desc)))
+          (go-room new-room (cat "You go " x ".~%")))
         (p "You can't go there."))))
 
 (match-com (look rug (:in house))
   (p "It is a black woolen rug painted with bright red geometric patterns."))
 
 (match-com ((:in house) (push move turn flip) rug)
-  (p "You push the rug, revealing a small trapdoor. "))
+  (p "You push the rug, revealing a small trapdoor. ")
+  (add-trait *r* 'trapdoor-revealed))
 
 (match-com (look x)
   (p "Nothing interesting about a " x "."))
 
-
 (trail house-s e house-se n house-e n house-ne w house-n w house-nw
        s house-w s house-sw e house-s n house)
+
+(trail-1-way cellar up house)
