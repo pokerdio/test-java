@@ -4,6 +4,8 @@
 (defparameter *ignore-tokens*
   '("" "the" "an" "a"))
 
+(defparameter *pc* '())
+
 (defparameter *translate*
   '((n . north) (s . south) (e . east) (w . west)
     (u . up) (d . down)
@@ -12,12 +14,20 @@
     (x . look)
     (examine . look)
     (see . look)
-    (q . quit)))
+    (watch . look)
+    (q . quit)
+    (o . open)
+    (i . inventory)))
+
+(defparameter *multi-translate*
+  '(((climb down) . (go down))
+    ((climb up) . (go up))
+    ((foo bar baz) . (foo bar))))
 
 (defparameter *go* '())
 
 (defparameter *command-handled* nil)
-
+(defparameter *bound-var* nil)
 (defparameter *things* nil)
 
 (defun reverse-dir (dir)
