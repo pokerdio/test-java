@@ -22,7 +22,8 @@
 (defparameter *multi-translate*
   '(((climb down) . (go down))
     ((climb up) . (go up))
-    ((foo bar baz) . (foo bar))))
+    ((foo bar baz) . (foo bar))
+    ((work bench) . (bench))))
 
 (defparameter *go* '())
 

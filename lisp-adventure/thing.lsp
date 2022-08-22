@@ -10,11 +10,12 @@
    (owner :initarg :owner
           :initform nil
           :accessor thing-owner)
+   (alias :initarg :alias
+          :initform nil
+          :accessor thing-alias)
    (contents :initarg :contents
              :initform nil
              :accessor thing-contents)))
-
-
 
 
 (defun get-thing (thing-sym)
@@ -96,12 +97,13 @@
       (setf (thing-contents thing)
             (cons item (thing-contents thing))))))
 
-(defun make-thing (sym traits desc &key (contents nil) (owner nil))
+(defun make-thing (sym traits desc &key (contents nil) (owner nil) (alias nil))
   (returning ret (make-instance 'thing
                                 :name sym
                                 :traits traits
                                 :description desc
                                 :owner owner
+                                :alias alias
                                 :contents contents)
     (add-thing ret)
     (when owner

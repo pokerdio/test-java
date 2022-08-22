@@ -38,15 +38,10 @@
 (defun var? (sym)
   (member sym '(x y z a b c d e f g h i j k l m n o p q r s u v w)))
 
-
-
-
 (defun bound-var? (var)
   (p (cat "bound-var? " var " " *bound-var* "~%"))
   (and (var? var)
        (member var *bound-var*)))
-
-
 
 (defun tokenize-string (s)
   (setf s (uiop:split-string s :separator '(#\  #\Tab #\, #\! #\? #\.)))
@@ -162,7 +157,6 @@ intended use with sorted lists"
   `(when (intersection ',dasein-lst (dasein))
      ,@(funcall body)))
 
-
 (defun build-room-trait (trait-lst body)
   `(when (has-traits *r* ',trait-lst)
      ,@(funcall body)))
@@ -171,10 +165,10 @@ intended use with sorted lists"
   (let ((item (car thing-lst))
         (traits (cdr thing-lst)))
     (if traits
-        `(when (and (member ,item (,place-function-sym))
-                    (has-traits ,item ,traits))
+        `(when (and (member ',item (,place-function-sym))
+                    (has-traits ',item ,traits))
            ,@(funcall body))
-        `(when (member ,item (,place-function-sym))
+        `(when (member ',item (,place-function-sym))
            ,@(funcall body)))))
 
 (defun build-match-thing-var-wrap (thing-lst body place-function-sym)
@@ -256,10 +250,31 @@ intended use with sorted lists"
                      (list (lambda (,com-sym)
                              ,(build-match-lambda-body com-sym pat body))))))))
 
+(defun match-comms-unfurl (pats)
+  (setf pats (append pats '(())))
+  (let ((ret nil)
+        (temp nil)
+        (sym-buf nil))
+    (dolist (x pats)
+      (cond ((and (listp x) sym-buf)
+             (setf ret (append ret
+                               (mapcar #'(lambda (pat)
+                                           (append pat sym-buf))
+                                       temp)))
+             (setf temp (list x))
+             (setf sym-buf nil))
+            ((listp x)
+             (setf temp (append temp (list x))))
+            ((symbolp x)
+             (setf sym-buf
+                   (append sym-buf (list x))))))
+    (append ret (butlast temp))))
+
 (defmacro match-coms (pats &body body)
-  `(progn
-     ,@(loop for pat in pats
-             collect `(match-com ,pat ,@body))))
+  (let ((pats (match-comms-unfurl pats)))
+    `(progn
+       ,@(loop for pat in (remove-if #'symbolp pats)
+               collect `(match-com ,pat ,@body)))))
 
 (defun process-commands (com)
   (let ((*command-handled* nil))
